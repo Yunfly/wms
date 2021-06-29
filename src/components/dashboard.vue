@@ -48,10 +48,6 @@
             <i class="icon iconfont icon-yuanjiaojuxing22"></i>
             <span slot="title">商品信息</span>
           </el-menu-item>
-          <el-menu-item index="/allorders">
-            <i class="icon iconfont icon-ziyuan3"></i>
-            <span slot="title">订单管理</span>
-          </el-menu-item>
           <!-- 仓库方 -->
           <el-menu-item index="/warehouse" v-if="userrole == 1">
             <i class="icon iconfont icon-xingzhuang102"></i>
@@ -61,6 +57,10 @@
           <el-menu-item index="/storages" v-if="userrole == 2">
             <i class="icon iconfont icon-xingzhuang102"></i>
             <span slot="title">仓库管理</span>
+          </el-menu-item>
+          <el-menu-item index="/allorders">
+            <i class="icon iconfont icon-ziyuan3"></i>
+            <span slot="title">订单管理</span>
           </el-menu-item>
           <el-menu-item index="">
             <i class="icon iconfont icon-xingzhuang102"></i>
@@ -111,12 +111,12 @@ export default {
     getUserInfo() {
       userService
         .getUserInfo()
-        .then(res => {
+        .then((res) => {
           console.log(res)
           this.$store.commit('setRole', res.role)
           console.log(this.$store.getters.getRole)
         })
-        .catch(err => {
+        .catch((err) => {
           console.log(err)
           this.$message.error(err.message)
         })

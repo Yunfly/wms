@@ -16,20 +16,6 @@
             placeholder="请输入品名"
           ></el-input>
         </el-form-item>
-        <el-form-item label="仓库:" prop="type">
-          <CrudSelect
-            :dic="types"
-            v-model="searchForm.warehouse"
-            label="仓库"
-          ></CrudSelect>
-        </el-form-item>
-        <el-form-item label="收件人手机:" prop="contact">
-          <el-input
-            class="filter-item input-normal"
-            v-model="searchForm.contact"
-            placeholder="请输入手机号"
-          ></el-input>
-        </el-form-item>
         <el-form-item style="width: 300px">
           <el-button
             size="small"
@@ -53,23 +39,6 @@
     <div class="twoheight1">
       <div class="table-menu">
         <div class="table-menu-left">
-          <el-button-group>
-            <el-button
-              size="small"
-              class="filter-item"
-              type="primary"
-              @click="changtagkey(1)"
-              >全部
-            </el-button>
-            <el-button
-              size="small"
-              class="filter-item"
-              type="primary"
-              plain
-              @click="changtagkey(2)"
-              >待审核修改
-            </el-button>
-          </el-button-group>
         </div>
         <div class="table-menu-right">
           <el-button-group>
@@ -112,34 +81,29 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="仓库SKU" width="100">
-          <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.stksku) }}</span>
-            <el-popover
-              placement="right-start"
-              title=""
-              trigger="hover"
-              :visible-arrow="false"
-            >
-              <div class="countdiv">
-                <div
-                  class="countitem"
-                  v-for="(n, index) in scope.row.counts"
-                  :key="index"
-                >
-                  <p>{{ n.warehousename }}：</p>
-                  <p>{{ n.warehousecount }}</p>
-                </div>
-              </div>
-              <i class="el-icon-question" slot="reference"></i>
-            </el-popover>
-          </template>
-        </el-table-column>
         <el-table-column label="卖家SKU">
           <template slot-scope="scope">
             <div>
               <img src="" alt="" />
               <span>{{ ifempty(scope.row.selsku) }}</span>
+              <el-popover
+                placement="right-start"
+                title=""
+                trigger="hover"
+                :visible-arrow="false"
+              >
+                <div class="countdiv">
+                  <div
+                    class="countitem"
+                    v-for="(n, index) in scope.row.counts"
+                    :key="index"
+                  >
+                    <p>{{ n.warehousename }}：</p>
+                    <p>{{ n.warehousecount }}</p>
+                  </div>
+                </div>
+                <i class="el-icon-question" slot="reference"></i>
+              </el-popover>
             </div>
           </template>
         </el-table-column>
@@ -163,7 +127,7 @@
             <span>{{ ifempty(scope.row.size) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="操作" fixed="right" width="200">
+        <el-table-column label="操作" fixed="right" width="150">
           <template slot-scope="scope">
             <el-button
               title="编辑"
@@ -172,24 +136,14 @@
               @click="handleEdit(scope.row)"
               >编辑
             </el-button>
-            <template v-if="scope.row.ptype === 1">
+            <template>
               <el-button
                 title="删除"
                 type="danger"
                 size="mini"
                 @click="handleCancleRequest(scope.row)"
               >
-                取消提交审核
-              </el-button>
-            </template>
-            <template v-else>
-              <el-button
-                title="删除"
-                type="warning"
-                size="mini"
-                @click="handleSubmitRequest(scope.row)"
-              >
-                审核仓库修改
+                删除
               </el-button>
             </template>
           </template>
@@ -596,22 +550,17 @@
 </template>
 
 <script>
-import CrudSelect from '../../components/avue/crud-select.vue'
 import { readExcel } from '../../util/readXlsxFile.js'
 
 export default {
-  components: {
-    CrudSelect
-  },
+  components: {},
   created() {},
   data() {
     return {
       tagkey: 1,
       searchForm: {
         sku: null,
-        warehouse: null,
-        name: null,
-        contact: null
+        name: null
       },
       list: [
         {

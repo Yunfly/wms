@@ -198,13 +198,6 @@
       >
         操作流水
       </div>
-      <div class="aside-item2">
-        <i class="icon iconfont icon-xingzhuang711-33"></i>
-        <p>仓库设置</p>
-      </div>
-      <div class="aside-item3" :class="menuactive == 12 ? 'isactive' : ''">
-        服务设置
-      </div>
     </div>
     <el-main>
       <div class="mainview">
