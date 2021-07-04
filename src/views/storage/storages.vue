@@ -46,8 +46,8 @@
       <!--TODO-->
       <div
         class="aside-item3"
-        :class="menuactive == '/product' ? 'isactive' : ''"
-        @click="cliclmenu('/product')"
+        :class="menuactive == '/sproduct' ? 'isactive' : ''"
+        @click="cliclmenu('/sproduct')"
       >
         仓库商品信息
       </div>

@@ -88,6 +88,11 @@ const routes = [
         redirect: '/storagedashboard',
         children: [
           {
+            path: '/sproduct',
+            name: '仓库商品信息',
+            component: Product
+          },
+          {
             path: '/storagedashboard',
             name: '数据报表',
             component: Dashhome
