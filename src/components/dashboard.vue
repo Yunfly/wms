@@ -105,7 +105,6 @@ export default {
   methods: {
     logout() {
       window.localStorage.clear()
-      window.location.reload()
       this.$router.push('/login')
     },
     getUserInfo() {

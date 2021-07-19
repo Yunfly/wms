@@ -1,43 +1,24 @@
 <template>
   <div class="product-container">
-    <div class="filter-container">
-      <el-form :inline="true" :model="searchForm" ref="searchForm">
-        <el-form-item label="SKU:" prop="sku">
-          <el-input
-            class="filter-item input-normal"
-            v-model="searchForm.sku"
-            placeholder="请输入库存量单位"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="商品名:" prop="name">
-          <el-input
-            class="filter-item input-normal"
-            v-model="searchForm.name"
-            placeholder="请输入商品名"
-          ></el-input>
-        </el-form-item>
-        <el-form-item style="width: 300px">
-          <el-button
-            size="small"
-            @click="searchReset"
-            icon="icon iconfont icon-qingkong"
-            type="primary"
-            plain
-            >清空查询条件
-          </el-button>
-          <el-button
-            size="small"
-            type="primary"
-            icon="icon iconfont icon-chaxun"
-            @click="handleFilter"
-            >查询
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </div>
+    <search />
+
     <!-- 表格功能列 -->
     <div class="twoheight1">
       <div class="table-menu">
+        <div class="table-menu-left">
+          <el-button-group>
+            <el-button size="small" class="filter-item" type="primary"
+              >全部仓库
+            </el-button>
+            <el-button size="small" class="filter-item" type="primary" plain
+              >签约仓库
+            </el-button>
+            <el-button size="small" class="filter-item" type="primary" plain
+              >预存仓库
+            </el-button>
+          </el-button-group>
+        </div>
+
         <div class="table-menu-left"></div>
         <div class="table-menu-right">
           <el-button-group>
@@ -106,22 +87,27 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="名称">
+        <el-table-column label="仓库名">
           <template slot-scope="scope">
             <span>{{ ifempty(scope.row.name) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="单位" width="100">
+        <el-table-column label="地址" width="100">
           <template slot-scope="scope">
             <span>{{ ifempty(scope.row.unit) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="重量" width="100">
+        <el-table-column label="类型" width="100">
           <template slot-scope="scope">
             <span>{{ ifempty(scope.row.weight) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="尺寸">
+        <el-table-column label="面积">
+          <template slot-scope="scope">
+            <span>{{ ifempty(scope.row.size) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="星级">
           <template slot-scope="scope">
             <span>{{ ifempty(scope.row.size) }}</span>
           </template>
@@ -285,7 +271,7 @@
     <el-dialog
       :title="title"
       :visible.sync="dialogVisible"
-      width="800px"
+      width="52%"
       :before-close="handleClose"
     >
       <el-form
@@ -307,8 +293,8 @@
         >
           预计单个包裹尺寸：
         </p>
-        <el-form-item label="长:" prop="length" style="width: 24%">
-          <el-input v-model="productForm.length" placeholder="请输入长">
+        <el-form-item label="长:" prop="pl" style="width: 24%">
+          <el-input v-model="productForm.pl" placeholder="请输入长">
             <el-select
               v-model="productForm.plunit"
               slot="append"
@@ -320,8 +306,8 @@
             </el-select>
           </el-input>
         </el-form-item>
-        <el-form-item label="宽:" prop="width" style="width: 24%">
-          <el-input v-model="productForm.width" placeholder="请输入宽">
+        <el-form-item label="宽:" prop="pw" style="width: 24%">
+          <el-input v-model="productForm.pw" placeholder="请输入宽">
             <el-select
               v-model="productForm.pwunit"
               slot="append"
@@ -332,8 +318,8 @@
             </el-select>
           </el-input>
         </el-form-item>
-        <el-form-item label="高:" prop="height" style="width: 24%">
-          <el-input v-model="productForm.height" placeholder="请输入高">
+        <el-form-item label="高:" prop="ph" style="width: 24%">
+          <el-input v-model="productForm.ph" placeholder="请输入高">
             <el-select
               v-model="productForm.phunit"
               slot="append"
@@ -344,8 +330,8 @@
             </el-select>
           </el-input>
         </el-form-item>
-        <el-form-item label="重量:" prop="weight" style="width: 24%">
-          <el-input v-model="productForm.weight" placeholder="请输入重量">
+        <el-form-item label="重量:" prop="pweight" style="width: 24%">
+          <el-input v-model="productForm.pweight" placeholder="请输入重量">
             <el-select
               v-model="productForm.pweunit"
               slot="append"
@@ -367,12 +353,12 @@
             <i v-else class="el-icon-plus avatar-uploader-icon"></i>
           </el-upload>
         </el-form-item>
-        <el-form-item label="备注:" prop="notes" style="width: 48%">
+        <el-form-item label="备注:" prop="pdesc" style="width: 48%">
           <el-input
             type="textarea"
             maxlength="300"
             show-word-limit
-            v-model="productForm.notes"
+            v-model="productForm.pdesc"
             placeholder="请填写备注相关信息"
           ></el-input>
         </el-form-item>
@@ -387,8 +373,8 @@
         >
           商品信息：
         </p>
-        <el-form-item label="商品名称:" prop="name" style="width: 48%">
-          <el-input v-model="productForm.name" placeholder="请输入商品名称">
+        <el-form-item label="名称:" prop="productname" style="width: 48%">
+          <el-input v-model="productForm.productname" placeholder="请输入名称">
             <i slot="suffix" class="fa fa-barcode" aria-hidden="true"></i
           ></el-input>
         </el-form-item>
@@ -429,7 +415,9 @@
 
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitForm">保 存</el-button>
+        <el-button type="primary" @click="dialogVisible = false"
+          >保 存</el-button
+        >
       </span>
     </el-dialog>
     <el-dialog
@@ -548,21 +536,60 @@
 
 <script>
 import { readExcel } from '../../util/readXlsxFile.js'
-import productService from '../../services/productService'
-
+import search from '../../components/search/index.vue'
 export default {
-  components: {},
-  created() {
-    this.getlist()
-  },
+  components: { search },
+  created() {},
   data() {
     return {
+      value: {},
       tagkey: 1,
       searchForm: {
         sku: null,
         name: null
       },
-      list: [],
+      list: [
+        {
+          imgurl: '',
+          rid: 1,
+          stksku: 'UN001',
+          selsku: 'IBSTONE0BLACK-001',
+          name: '一次性一用口罩',
+          unit: 'Set',
+          weight: '7kg',
+          size: null,
+          count: 300,
+          counts: [
+            {
+              warehousename: '北卡仓',
+              warehousecount: 15
+            }
+          ],
+          price: 100,
+          desc: '',
+          ptype: 0
+        },
+        {
+          imgurl: '',
+          rid: 2,
+          stksku: 'UN002',
+          selsku: 'IBSTONE0BLACK-001',
+          name: '一次性一用口罩',
+          unit: 'Set',
+          weight: '7kg',
+          size: null,
+          count: 300,
+          counts: [
+            {
+              warehousename: '南卡仓',
+              warehousecount: 10
+            }
+          ],
+          price: 100,
+          desc: '',
+          ptype: 1
+        }
+      ],
       types: [],
       listLoading: false,
       listQuery: {
@@ -572,26 +599,33 @@ export default {
       total: 0,
       dialogVisible: false,
       title: '',
-      value: [],
       productForm: {
         sku: [{ value: '' }],
         unit: null,
-        name: null,
-        length: null,
+        productname: null,
+        pl: null,
         plunit: 'cm',
-        width: null,
+        pw: null,
         pwunit: 'cm',
-        height: null,
+        ph: null,
         phunit: 'cm',
-        weight: null,
+        pweight: null,
         pweunit: 'lbs',
-        notes: null
+        pdesc: null
       },
       imageUrl: '',
       productRules: {
-        name: [
-          { required: true, message: '请输入商品名称', trigger: 'blur' },
-          { min: 1, max: 32, message: '长度在 1 到 32 个字符', trigger: 'blur' }
+        barcode: [
+          { required: true, message: '请输入有效密码', trigger: 'blur' },
+          { min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' }
+        ],
+        productname: [
+          { required: true, message: '请输入有效密码', trigger: 'blur' },
+          { min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' }
+        ],
+        price: [
+          { required: true, message: '请输入有效密码', trigger: 'blur' },
+          { min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' }
         ]
       },
       importdialogVisible: false,
@@ -613,40 +647,9 @@ export default {
     ifempty(value) {
       return value || '--'
     },
-    submitForm() {
-      if (this.title === '添加新商品') {
-        this.addItem()
-      }
-
-      if (this.title === '编辑产品') {
-        this.updateItem()
-      }
-    },
-
-    async getlist() {
-      await productService.getListData().then((res) => {
-        this.list = res.content
-        this.total = res.totalElements
-      })
-    },
-    updateList(data) {
-      return productService.updateItem({
-        ...data,
-        sku: data.sku.filter((i) => i.value !== '').map((x) => x.value)
-      })
-    },
-    deleteItem(data) {
-      productService.deleteItem(data)
-    },
-    handleFilter() {
-      productService.getListData(this.searchForm)
-    },
-    searchReset() {
-      this.searchForm = {
-        sku: null,
-        name: null
-      }
-    },
+    getlist() {},
+    handleFilter() {},
+    searchReset() {},
     addSKURow() {
       this.productForm.sku.push({ value: '' })
     },
@@ -657,73 +660,12 @@ export default {
       this.title = '添加新商品'
       this.dialogVisible = true
     },
-    addItem() {
-      this.$refs.productForm.validate(async (valid) => {
-        if (valid) {
-          const {
-            name,
-            unit,
-            imgurl,
-            sku,
-            length,
-            height,
-            width,
-            weight,
-            notes
-          } = this.productForm
-          console.log(this.productForm)
-          await productService.addItem({
-            name,
-            unit,
-            imgurl,
-            length,
-            height,
-            width,
-            weight,
-            notes,
-            sku
-          })
-          await this.getlist()
-          this.dialogVisible = false
-          this.$refs.productForm.resetFields()
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
-    },
-    updateItem() {
-      this.$refs.productForm.validate(async (valid) => {
-        if (valid) {
-          await this.updateList(this.productForm)
-          await this.getlist()
-          this.dialogVisible = false
-          this.$refs.productForm.resetFields()
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
-    },
     handleEdit(row) {
-      console.log(row)
-      this.productForm = row
-      if (!this.productForm.sku.length) {
-        this.addSKURow()
-      } else {
-        this.productForm.sku = this.productForm.sku.map((value) => {
-          console.log(value)
-          return {
-            value: typeof value !== 'object' ? value : value.value
-          }
-        })
-      }
       this.title = '编辑产品'
       this.dialogVisible = true
     },
-    async handleCancleRequest(item) {
-      await productService.deleteItem({ item: item.openid })
-      console.log('Request cancled', item)
+    handleCancleRequest() {
+      console.log('Request cancled')
     },
     handleSubmitRequest() {
       console.log('Request submitted')

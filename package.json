@@ -11,6 +11,7 @@
     "axios": "^0.21.0",
     "core-js": "^3.6.5",
     "echarts": "^4.9.0",
+    "element-china-area-data": "^5.0.2",
     "element-ui": "^2.4.5",
     "font-awesome": "^4.7.0",
     "jquery": "^3.6.0",

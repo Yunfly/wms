@@ -1,16 +1,12 @@
 import Axios from '../https/axios'
-import * as cookieStore from '../https/cookieStore'
-import urls from '../https/urls.js'
 import * as commonConst from '../const/common'
 
-export default class UserService {
-  static login(params) {
+export default class ProductService {
+  static getListData(params) {
     return new Promise((resolve, reject) => {
-      Axios.fetchPost(urls.LOGIN, params, true).then(
+      Axios.fetchGet('/item/get', params, true).then(
         (res) => {
           if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
-            window.localStorage.setItem('wms_auth_access_token', res.payload.token)
-            window.localStorage.setItem('wms_auth_expires', res.payload.token_expire)
             resolve(res.data)
           } else {
             reject(res.payload)
@@ -23,12 +19,11 @@ export default class UserService {
     })
   }
 
-  static logout() {
+  static addItem(params) {
     return new Promise((resolve, reject) => {
-      Axios.fetchPostQuery(urls.LOGOUT, null, false).then(
+      Axios.fetchPost('/item/add', params, true).then(
         (res) => {
           if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
-            cookieStore.remove('access_token')
             resolve(res.data)
           } else {
             reject(res.payload)
@@ -41,47 +36,13 @@ export default class UserService {
     })
   }
 
-  static registry(params) {
+  static deleteItem(params) {
     return new Promise((resolve, reject) => {
-      Axios.fetchPost(urls.REGISTRY, params).then(
+      Axios.axios('/item/del', {
+        params,
+        method: 'DELETE'
+      }).then(
         (res) => {
-          if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
-            resolve(res)
-          } else {
-            reject(res.payload)
-          }
-        },
-        err => {
-          reject(err)
-        }
-      )
-    })
-  }
-
-  static resetPassword(params) {
-    return new Promise((resolve, reject) => {
-      Axios.fetchPost(urls.RESET_PASSWORD, params).then(
-        (res) => {
-          if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
-            resolve(res)
-          } else {
-            reject(res.payload)
-          }
-        },
-        err => {
-          reject(err)
-        }
-      )
-    })
-  }
-
-  static getUserInfo() {
-    return new Promise((resolve, reject) => {
-      Axios.fetchGet(urls.PERSONAL_INFO, null).then(
-        (res) => {
-          console.log(1111)
-          console.log(res)
-          console.log(2222)
           if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
             resolve(res.data)
           } else {
@@ -94,4 +55,24 @@ export default class UserService {
       )
     })
   }
-}
+
+  static updateItem(data) {
+    return new Promise((resolve, reject) => {
+      Axios.axios('/item/update', {
+        data,
+        method: 'PUT'
+      }).then(
+        (res) => {
+          if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
+            resolve(res.data)
+          } else {
+            reject(res.payload)
+          }
+        },
+        err => {
+          reject(err)
+        }
+      )
+    })
+  }
+};

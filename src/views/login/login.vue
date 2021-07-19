@@ -56,13 +56,13 @@
                 </span>
               </el-form-item>
               <!--组号-->
-              <el-form-item label="" prop="groupspace">
+              <el-form-item label="" prop="companyname">
                 <span class="form-input">
                   <img src="../../assets/images/login/shield.png" />
                   <el-input
-                    v-model="loginForm.groupspace"
+                    v-model="loginForm.companyname"
                     type="text"
-                    placeholder="请输入组号"
+                    placeholder="请输入公司名"
                     class="login-input-email"
                   >
                   </el-input>
@@ -91,6 +91,7 @@
         <el-collapse-transition>
           <div class="registry" v-show="!showLoginForm">
             <el-form
+              size="mini"
               :model="registryForm"
               class="registry-form"
               label-width="85px"
@@ -101,6 +102,17 @@
                 <el-radio-group v-model="registryForm.grouptype">
                   <el-radio label="1">我是卖家</el-radio>
                   <el-radio label="2">我是仓库方</el-radio>
+                </el-radio-group>
+              </el-form-item>
+
+              <el-form-item
+                label="国家:"
+                prop="country"
+                v-if="registryForm.grouptype == '1'"
+              >
+                <el-radio-group v-model="registryForm.country">
+                  <el-radio label="China">中国</el-radio>
+                  <el-radio label="USA">美国</el-radio>
                 </el-radio-group>
               </el-form-item>
               <el-form-item label="姓:" prop="firstname">
@@ -135,69 +147,105 @@
                   type="password"
                 ></el-input>
               </el-form-item>
-              <el-form-item label="公司名:" prop="company">
+              <el-form-item label="公司名:" prop="cname">
                 <el-input
-                  v-model="registryForm.company"
+                  v-model="registryForm.cname"
                   placeholder="请输入公司名称"
                 ></el-input>
               </el-form-item>
-              <el-form-item label="地址:" prop="location" v-if="registryForm.grouptype=='1'">
+              <el-form-item label="邮编:" prop="zipcode">
                 <el-input
-                  v-model="registryForm.location"
-                  placeholder="请输入地址"
+                  v-model="registryForm.zipcode"
+                  placeholder="Zip Code"
                 ></el-input>
               </el-form-item>
-              <el-form-item label="电话:" prop="contact" v-if="registryForm.grouptype=='1'">
+              <el-form-item
+                label="电话:"
+                prop="contact"
+                v-if="registryForm.grouptype == '1'"
+              >
                 <el-input
                   v-model="registryForm.contact"
                   placeholder="请输入电话号码"
                   type="number"
                 ></el-input>
               </el-form-item>
-              <div class="addressdiv">
-                  <el-form-item label="" prop="streetadress" v-if="registryForm.grouptype=='2'">
+              <!-- 选择地区 -->
+              <div v-if="registryForm.country == 'China'">
+                <el-form-item label="地区:" prop="area">
+                  <el-cascader
+                    size="mini"
+                    :options="options"
+                    v-model="registryForm.area"
+                  >
+                  </el-cascader>
+                </el-form-item>
+
+                <el-form-item label="街道号:" prop="main_street">
+                  <el-input
+                    v-model="registryForm.main_street"
+                    placeholder="请输入街道号"
+                  ></el-input>
+                </el-form-item>
+                <el-form-item label="门牌号:" prop="sub_street">
+                  <el-input
+                    v-model="registryForm.sub_street"
+                    placeholder="请输入门牌号"
+                  ></el-input>
+                </el-form-item>
+              </div>
+              <div
+                v-if="
+                  registryForm.country == 'USA' || registryForm.grouptype == '2'
+                "
+              >
+                <div class="addressdiv">
+                  <el-form-item label="" prop="main_street">
                     <el-input
-                      v-model="registryForm.streetadress"
+                      v-model="registryForm.main_street"
                       placeholder="Street Adress"
                     ></el-input>
                   </el-form-item>
-                  <el-form-item label="" prop="apartment" v-if="registryForm.grouptype=='2'">
+                  <el-form-item label="" prop="main_street">
                     <el-input
-                      v-model="registryForm.apartment"
+                      v-model="registryForm.main_street"
                       placeholder="apartment/unit/suite"
                     ></el-input>
                   </el-form-item>
-              </div>
-              <div class="addressdiv">
-                <div class="addressdiv1">
-                  <el-form-item label="" prop="city" v-if="registryForm.grouptype=='2'">
-                    <el-input
-                      v-model="registryForm.city"
-                      placeholder="City"
-                    ></el-input>
-                  </el-form-item>
-                  <el-form-item label="" prop="state" v-if="registryForm.grouptype=='2'">
-                    <el-select v-model="registryForm.state" placeholder="state">
-                      <el-option
-                        v-for="item in states"
-                        :key="item.value"
-                        :label="item.label"
-                        :value="item.value">
-                      </el-option>
-                    </el-select>
-                  </el-form-item>
-                  <el-form-item label="" prop="zipcode" v-if="registryForm.grouptype=='2'">
-                    <el-input
-                      v-model="registryForm.zipcode"
-                      placeholder="Zip Code"
-                    ></el-input>
-                  </el-form-item>
                 </div>
-                <el-form-item label="" prop="Phone" v-if="registryForm.grouptype=='2'">
-                    <el-input
-                      v-model="registryForm.Phone"
-                      placeholder="Phone"
-                    ></el-input>
+                <div class="addressdiv">
+                  <div class="addressdiv1">
+                    <el-form-item label="" prop="city">
+                      <el-input
+                        v-model="registryForm.city"
+                        placeholder="City"
+                      ></el-input>
+                    </el-form-item>
+                    <el-form-item label="" prop="state">
+                      <el-select
+                        v-model="registryForm.state"
+                        placeholder="state"
+                      >
+                        <el-option
+                          v-for="item in states"
+                          :key="item.value"
+                          :label="item.label"
+                          :value="item.value"
+                        >
+                        </el-option>
+                      </el-select>
+                    </el-form-item>
+                  </div>
+                </div>
+                <el-form-item
+                  label="Phone："
+                  prop="Phone"
+                  v-if="registryForm.grouptype == '2'"
+                >
+                  <el-input
+                    v-model="registryForm.Phone"
+                    placeholder="Phone"
+                  ></el-input>
                 </el-form-item>
               </div>
               <!-- <el-form-item label="邀请码:" prop="invite">
@@ -241,25 +289,32 @@
 
 <script>
 import userService from '../../services/userService'
+import { provinceAndCityData, CodeToText } from 'element-china-area-data'
+import states_hash from './states_hash.json'
 
 export default {
   data() {
     return {
+      options: provinceAndCityData,
       loginForm: {
         email: null,
         password: null,
-        groupspace: null,
+        companyname: null,
         rememberMe: 1
       },
       registryForm: {
         grouptype: '1',
+        country: 'China',
+        area: '',
+        main_street: '',
+        sub_street: '',
         firstname: null,
         lastname: null,
         email: null,
         password: null,
         pwdConfirm: null,
-        company: null,
-        location: null,
+        cname: null,
+        // location: null,
         contact: null
         // invite: null
       },
@@ -288,11 +343,11 @@ export default {
         grouptype: [{ required: true }],
         firstname: [
           { required: true, message: '请输入有效的姓氏', trigger: 'blur' },
-          { min: 1, max: 5, message: '长度在 1 到 5 个字符', trigger: 'blur' }
+          { min: 1, max: 16, message: '长度在 1 到 16 个字符', trigger: 'blur' }
         ],
         lastname: [
           { required: true, message: '请输入有效的名', trigger: 'blur' },
-          { min: 1, max: 5, message: '长度在 1 到 5 个字符', trigger: 'blur' }
+          { min: 1, max: 16, message: '长度在 1 到 16 个字符', trigger: 'blur' }
         ],
         email: [
           {
@@ -309,7 +364,7 @@ export default {
         pwdConfirm: [
           { required: true, trigger: 'blur', validator: this.checkPwd }
         ],
-        company: [
+        cname: [
           { required: true, message: '请输入有效公司名', trigger: 'blur' },
           { min: 3, max: 20, message: '长度在 3 到 20 个字符', trigger: 'blur' }
         ],
@@ -322,17 +377,25 @@ export default {
       checked: false,
       inTheLogin: false,
       registering: false,
-      states: [
-        {
-          value: 'state1',
-          label: 'state1'
+      states: Object.values(states_hash).map((x) => {
+        console.log(states_hash)
+        return {
+          value: x,
+          label: x
         }
-      ]
+      })
+    }
+  },
+  watch: {
+    'registryForm.grouptype': function (val, oldVal) {
+      if (val === '2') {
+        this.registryForm.country = 'USA'
+      }
     }
   },
   methods: {
     submitForm(formName, next) {
-      this.$refs[formName].validate(valid => {
+      this.$refs[formName].validate((valid) => {
         if (valid) {
           next()
         } else {
@@ -346,17 +409,18 @@ export default {
       const params = JSON.parse(JSON.stringify(this.loginForm))
       userService
         .login(params)
-        .then(res => {
+        .then((res) => {
           this.inTheLogin = false
           this.$router.push('/dashboard')
         })
-        .catch(err => {
+        .catch((err) => {
           this.inTheLogin = false
           this.$message.error(err.message)
         })
     },
     checkEmail(rule, value, callback) {
-      const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
+      const emailRegex =
+        /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
       if (!emailRegex.test(value)) {
         callback(new Error('请输入有效的邮箱号'))
       } else {
@@ -372,14 +436,50 @@ export default {
     },
     registry() {
       this.registering = true
-      const params = JSON.parse(JSON.stringify(this.registryForm))
-      delete params.pwdConfirm
-      params.grouptype = parseInt(params.grouptype)
+      const formData = JSON.parse(JSON.stringify(this.registryForm))
+      formData.grouptype = parseInt(formData.grouptype)
       window.localStorage.setItem('wms_auth_access_token', '')
       window.localStorage.setItem('wms_auth_expires', '')
+      console.log(CodeToText[formData.area[0]], CodeToText[formData.area[1]])
+      const {
+        email,
+        password,
+        grouptype,
+        cname,
+        firstname,
+        lastname,
+        main_street,
+        sub_street,
+        city,
+        state,
+        country,
+        zipcode
+      } = formData
+      let params = {}
+      if (grouptype === 1) {
+        params = {
+          email,
+          password,
+          grouptype,
+          cname,
+          firstname,
+          lastname,
+          main_street,
+          sub_street,
+          city,
+          state,
+          country,
+          zipcode
+        }
+        if (params.country === 'China') {
+          params.city = CodeToText[formData.area[0]]
+          params.state = CodeToText[formData.area[1]]
+        }
+      }
+
       userService
         .registry(params)
-        .then(res => {
+        .then((res) => {
           this.$message({
             message: '注册成功！请前往注册邮箱激活账号！',
             type: 'success'
@@ -387,7 +487,7 @@ export default {
           this.registering = false
           this.showLoginForm = true
         })
-        .catch(err => {
+        .catch((err) => {
           this.registering = false
           this.$message.error(err.message)
         })
@@ -612,27 +712,27 @@ export default {
           }
         }
       }
-      .addressdiv{
+      .addressdiv {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        .el-form-item{
+        .el-form-item {
           width: 50%;
-          /deep/.el-form-item__content{
+          /deep/.el-form-item__content {
             margin-left: 20px !important;
           }
         }
-        .addressdiv1{
-          width: 50%;
+        .addressdiv1 {
+          // width: 50%;
           display: flex;
-        align-items: center;
-        justify-content: space-between;
-        .el-form-item{
-          width: 40%;
-          /deep/.el-form-item__content{
-            margin-left: 20px !important;
+          align-items: center;
+          justify-content: space-between;
+          .el-form-item {
+            width: 40%;
+            /deep/.el-form-item__content {
+              margin-left: 20px !important;
+            }
           }
-        }
         }
       }
     }
