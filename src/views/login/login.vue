@@ -199,43 +199,38 @@
                   registryForm.country == 'USA' || registryForm.grouptype == '2'
                 "
               >
-                <div class="addressdiv">
-                  <el-form-item label="" prop="main_street">
+                <div class="">
+                  <el-form-item label="街道号:" prop="main_street">
                     <el-input
                       v-model="registryForm.main_street"
                       placeholder="Street Adress"
                     ></el-input>
                   </el-form-item>
-                  <el-form-item label="" prop="main_street">
+                  <el-form-item label="门牌号:" prop="sub_street">
                     <el-input
-                      v-model="registryForm.main_street"
+                      v-model="registryForm.sub_street"
                       placeholder="apartment/unit/suite"
                     ></el-input>
                   </el-form-item>
                 </div>
-                <div class="addressdiv">
-                  <div class="addressdiv1">
-                    <el-form-item label="" prop="city">
-                      <el-input
-                        v-model="registryForm.city"
-                        placeholder="City"
-                      ></el-input>
-                    </el-form-item>
-                    <el-form-item label="" prop="state">
-                      <el-select
-                        v-model="registryForm.state"
-                        placeholder="state"
+                <div class="" style="display: flex">
+                  <el-form-item label="城市:" prop="city">
+                    <el-input
+                      v-model="registryForm.city"
+                      placeholder="City"
+                    ></el-input>
+                  </el-form-item>
+                  <el-form-item label="州:" prop="state">
+                    <el-select v-model="registryForm.state" placeholder="state">
+                      <el-option
+                        v-for="item in states"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value"
                       >
-                        <el-option
-                          v-for="item in states"
-                          :key="item.value"
-                          :label="item.label"
-                          :value="item.value"
-                        >
-                        </el-option>
-                      </el-select>
-                    </el-form-item>
-                  </div>
+                      </el-option>
+                    </el-select>
+                  </el-form-item>
                 </div>
                 <el-form-item
                   label="Phone："

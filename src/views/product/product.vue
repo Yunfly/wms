@@ -307,10 +307,14 @@
         >
           预计单个包裹尺寸：
         </p>
-        <el-form-item label="长:" prop="length" style="width: 24%">
-          <el-input v-model="productForm.length" placeholder="请输入长">
+        <el-form-item label="长:" prop="length">
+          <el-input
+            type="number"
+            v-model="productForm.length"
+            placeholder="请输入长"
+          >
             <el-select
-              v-model="productForm.plunit"
+              v-model="productForm.size_unit"
               slot="append"
               placeholder=""
               size="mini"
@@ -320,10 +324,14 @@
             </el-select>
           </el-input>
         </el-form-item>
-        <el-form-item label="宽:" prop="width" style="width: 24%">
-          <el-input v-model="productForm.width" placeholder="请输入宽">
+        <el-form-item label="宽:" prop="width">
+          <el-input
+            type="number"
+            v-model="productForm.width"
+            placeholder="请输入宽"
+          >
             <el-select
-              v-model="productForm.pwunit"
+              v-model="productForm.size_unit"
               slot="append"
               placeholder=""
             >
@@ -332,10 +340,14 @@
             </el-select>
           </el-input>
         </el-form-item>
-        <el-form-item label="高:" prop="height" style="width: 24%">
-          <el-input v-model="productForm.height" placeholder="请输入高">
+        <el-form-item label="高:" prop="height">
+          <el-input
+            type="number"
+            v-model="productForm.height"
+            placeholder="请输入高"
+          >
             <el-select
-              v-model="productForm.phunit"
+              v-model="productForm.size_unit"
               slot="append"
               placeholder=""
             >
@@ -344,10 +356,14 @@
             </el-select>
           </el-input>
         </el-form-item>
-        <el-form-item label="重量:" prop="weight" style="width: 24%">
-          <el-input v-model="productForm.weight" placeholder="请输入重量">
+        <el-form-item label="重量:" prop="weight">
+          <el-input
+            type="number"
+            v-model="productForm.weight"
+            placeholder="请输入重量"
+          >
             <el-select
-              v-model="productForm.pweunit"
+              v-model="productForm.weight_unit"
               slot="append"
               placeholder=""
             >
@@ -371,6 +387,7 @@
           <el-input
             type="textarea"
             maxlength="300"
+            rows="6"
             show-word-limit
             v-model="productForm.notes"
             placeholder="请填写备注相关信息"
@@ -578,13 +595,11 @@ export default {
         unit: null,
         name: null,
         length: null,
-        plunit: 'cm',
+        size_unit: 'cm',
         width: null,
-        pwunit: 'cm',
         height: null,
-        phunit: 'cm',
         weight: null,
-        pweunit: 'lbs',
+        weight_unit: 'lbs',
         notes: null
       },
       imageUrl: '',
@@ -668,6 +683,8 @@ export default {
             length,
             height,
             width,
+            weight_unit,
+            size_unit,
             weight,
             notes
           } = this.productForm
@@ -680,11 +697,13 @@ export default {
             height,
             width,
             weight,
+            weight_unit,
+            size_unit,
             notes,
-            sku
+            sku: sku.map((x) => x.value)
           })
-          await this.getlist()
           this.dialogVisible = false
+          await this.getlist()
           this.$refs.productForm.resetFields()
         } else {
           console.log('error submit!!')
