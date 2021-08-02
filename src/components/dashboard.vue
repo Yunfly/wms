@@ -46,7 +46,7 @@
           </el-menu-item>
           <el-menu-item index="/product" v-if="userrole == 2">
             <i class="icon iconfont icon-yuanjiaojuxing22"></i>
-            <span slot="title">商品信息</span>
+            <span slot="title">商品名称</span>
           </el-menu-item>
           <!-- 仓库方 -->
           <el-menu-item index="/warehouse" v-if="userrole == 1">

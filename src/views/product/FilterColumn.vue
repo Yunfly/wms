@@ -76,7 +76,7 @@
           <template slot-scope="scope">
             <div>
               <img src="" alt="" />
-              <span>{{ ifempty(scope.row.openid) }}</span>
+              <span>{{ ifempty(scope.row.rid) }}</span>
             </div>
           </template>
         </el-table-column>
@@ -121,15 +121,9 @@
             <span>{{ ifempty(scope.row.weight) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="尺寸 (长宽高/单位)">
+        <el-table-column label="尺寸">
           <template slot-scope="scope">
-            <span
-              >{{ ifempty(scope.row.width) }}、{{
-                ifempty(scope.row.length)
-              }}、{{ ifempty(scope.row.height) }} ({{
-                ifempty(scope.row.weight_unit)
-              }})</span
-            >
+            <span>{{ ifempty(scope.row.size) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作" fixed="right" width="150">
@@ -299,200 +293,154 @@
         class="product-form"
         label-width="100px"
         :rules="productRules"
-        size="small"
         ref="productForm"
         :inline="true"
       >
-        <el-row type="flex" align="middle" justify="center" class="row-bg">
-          <el-col :span="12" style="text-align: center">
-            <el-form-item prop="imageUrl" style="margin-top: 20px">
-              <el-upload
-                class="avatar-uploader"
-                action="#"
-                :show-file-list="false"
-                :on-success="handleAvatarSuccess"
-                :before-upload="beforeAvatarUpload"
-              >
-                <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-              </el-upload>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <p
-              style="
-                font-family: Microsoft YaHei;
-                font-weight: bold;
-                color: rgb(0, 0, 0);
-                line-height: 50px;
-                text-align: left;
-                font-size: 16px;
-              "
-            >
-              基本信息
-            </p>
-            <!-- todo: 新增名称和商品sku -->
-            <el-form-item label="商品sku:" prop="name">
-              <el-input
-                style="width: 198px"
-                v-model="productForm.unit"
-                placeholder="请输入名称"
-              ></el-input>
-            </el-form-item>
-            <el-form-item label="名称:" prop="name">
-              <el-input
-                style="width: 198px"
-                v-model="productForm.unit"
-                placeholder="请输入名称"
-              ></el-input>
-            </el-form-item>
-            <el-form-item label="单位:" prop="unit">
-              <el-input
-                style="width: 198px"
-                v-model="productForm.unit"
-                placeholder="请输入单位"
-              ></el-input>
-            </el-form-item>
-            <el-form-item label="长:" prop="length">
-              <el-input
-                type="number"
-                v-model="productForm.length"
-                placeholder="请输入长"
-              >
-                <el-select
-                  v-model="productForm.size_unit"
-                  slot="append"
-                  placeholder=""
-                  size="mini"
-                >
-                  <el-option label="cm" value="1"></el-option>
-                  <el-option label="inch" value="2"></el-option>
-                </el-select>
-              </el-input>
-            </el-form-item>
-            <el-form-item label="宽:" prop="width">
-              <el-input
-                type="number"
-                v-model="productForm.width"
-                placeholder="请输入宽"
-              >
-                <el-select
-                  v-model="productForm.size_unit"
-                  slot="append"
-                  placeholder=""
-                >
-                  <el-option label="cm" value="1"></el-option>
-                  <el-option label="inch" value="2"></el-option>
-                </el-select>
-              </el-input>
-            </el-form-item>
-            <el-form-item label="高:" prop="height">
-              <el-input
-                type="number"
-                v-model="productForm.height"
-                placeholder="请输入高"
-              >
-                <el-select
-                  v-model="productForm.size_unit"
-                  slot="append"
-                  placeholder=""
-                >
-                  <el-option label="cm" value="1"></el-option>
-                  <el-option label="inch" value="2"></el-option>
-                </el-select>
-              </el-input>
-            </el-form-item>
-            <el-form-item label="重量:" prop="weight">
-              <el-input
-                type="number"
-                v-model="productForm.weight"
-                placeholder="请输入重量"
-              >
-                <el-select
-                  v-model="productForm.weight_unit"
-                  slot="append"
-                  placeholder=""
-                >
-                  <el-option label="lbs" value="1"></el-option>
-                  <el-option label="kg" value="2"></el-option> </el-select
-              ></el-input>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
         <p
           style="
-            font-size: 16px;
+            font-size: 14px;
             font-family: Microsoft YaHei;
             font-weight: bold;
             color: #000;
             line-height: 50px;
           "
         >
-          对应SKU:
+          预计单个包裹尺寸：
         </p>
-        <el-row type="flex" justify="space-between">
-          <el-col :span="11">
-            <el-form-item label="店铺名称:" prop="name">
-              <el-select
-                style="width: 100%; margin-bottom: 5px; height: 32px"
-                v-for="(item, index) in productForm.sku"
-                :key="index"
-                v-model="item.value"
-                placeholder="请选择店铺名称"
-              >
-                <el-option
-                  v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                >
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="11">
-            <el-form-item label="店铺SKU:" prop="sku">
-              <div>
-                <el-input
-                  style="width: 100%; margin-bottom: 5px"
-                  :placeholder="'SKU序号-' + (index + 1)"
-                  v-for="(item, index) in productForm.sku"
-                  :key="index"
-                  v-model="item.value"
-                  class="input-with-select"
-                >
-                  <el-button
-                    @click="addSKURow"
-                    v-if="index == 0"
-                    slot="append"
-                    icon="el-icon-plus"
-                    circle
-                  ></el-button>
-                  <el-button
-                    @click="delSKURow(index)"
-                    v-if="index != 0"
-                    slot="append"
-                    icon="el-icon-minus"
-                    circle
-                  ></el-button>
-                </el-input>
-              </div>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-form-item label="备注:" label-width="50" prop="notes">
+        <el-form-item label="长:" prop="length">
+          <el-input
+            type="number"
+            v-model="productForm.length"
+            placeholder="请输入长"
+          >
+            <el-select
+              v-model="productForm.size_unit"
+              slot="append"
+              placeholder=""
+              size="mini"
+            >
+              <el-option label="cm" value="1"></el-option>
+              <el-option label="inch" value="2"></el-option>
+            </el-select>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="宽:" prop="width">
+          <el-input
+            type="number"
+            v-model="productForm.width"
+            placeholder="请输入宽"
+          >
+            <el-select
+              v-model="productForm.size_unit"
+              slot="append"
+              placeholder=""
+            >
+              <el-option label="cm" value="1"></el-option>
+              <el-option label="inch" value="2"></el-option>
+            </el-select>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="高:" prop="height">
+          <el-input
+            type="number"
+            v-model="productForm.height"
+            placeholder="请输入高"
+          >
+            <el-select
+              v-model="productForm.size_unit"
+              slot="append"
+              placeholder=""
+            >
+              <el-option label="cm" value="1"></el-option>
+              <el-option label="inch" value="2"></el-option>
+            </el-select>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="重量:" prop="weight">
+          <el-input
+            type="number"
+            v-model="productForm.weight"
+            placeholder="请输入重量"
+          >
+            <el-select
+              v-model="productForm.weight_unit"
+              slot="append"
+              placeholder=""
+            >
+              <el-option label="lbs" value="1"></el-option>
+              <el-option label="kg" value="2"></el-option> </el-select
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="商品图片:" prop="imageUrl" style="width: 48%">
+          <el-upload
+            class="avatar-uploader"
+            action="#"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="备注:" prop="notes" style="width: 48%">
           <el-input
             type="textarea"
             maxlength="300"
-            style="width: 760px"
             rows="6"
             show-word-limit
             v-model="productForm.notes"
             placeholder="请填写备注相关信息"
           ></el-input>
+        </el-form-item>
+        <p
+          style="
+            font-size: 14px;
+            font-family: Microsoft YaHei;
+            font-weight: bold;
+            color: #000;
+            line-height: 50px;
+          "
+        >
+          商品信息：
+        </p>
+        <el-form-item label="商品名称:" prop="name" style="width: 48%">
+          <el-input v-model="productForm.name" placeholder="请输入商品名称">
+            <i slot="suffix" class="fa fa-barcode" aria-hidden="true"></i
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="单位:" prop="unit" style="width: 48%">
+          <el-input
+            v-model="productForm.unit"
+            placeholder="请输入单位"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="产品SKU:" prop="sku" style="width: 48%">
+          <div>
+            <el-input
+              :placeholder="'SKU序号-' + (index + 1)"
+              v-for="(item, index) in productForm.sku"
+              :key="index"
+              v-model="item.value"
+              class="input-with-select"
+              style="margin-bottom: 5px"
+            >
+              <el-button
+                @click="addSKURow"
+                v-if="index == 0"
+                slot="append"
+                icon="el-icon-plus"
+                circle
+              ></el-button>
+              <el-button
+                @click="delSKURow(index)"
+                v-if="index != 0"
+                slot="append"
+                icon="el-icon-minus"
+                circle
+              ></el-button>
+            </el-input>
+          </div>
         </el-form-item>
       </el-form>
 
@@ -618,6 +566,7 @@
 <script>
 import { readExcel } from '../../util/readXlsxFile.js'
 import productService from '../../services/productService'
+
 export default {
   components: {},
   created() {
@@ -640,7 +589,7 @@ export default {
       total: 0,
       dialogVisible: false,
       title: '',
-      value: 'opt2',
+      value: [],
       productForm: {
         sku: [{ value: '' }],
         unit: null,
@@ -673,11 +622,6 @@ export default {
           label: '删除'
         }
       ]
-    }
-  },
-  watch: {
-    value(val) {
-      console.log(val)
     }
   },
   methods: {
@@ -994,7 +938,7 @@ p {
   /deep/.el-form-item {
     margin-right: 0px;
     .el-form-item__content {
-      // width: calc(100% - 100px);
+      width: calc(100% - 100px);
       .avatar-uploader {
         // border: 1px dashed #d9d9d9;
         .el-upload {
@@ -1243,14 +1187,5 @@ p {
       }
     }
   }
-}
-
-.avatar-uploader .avatar-uploader-icon {
-  font-size: 28px;
-  color: #8c939d;
-  width: 340px;
-  height: 350px;
-  line-height: 350px;
-  text-align: center;
 }
 </style>
