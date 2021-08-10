@@ -4,35 +4,26 @@ import VueRouter from 'vue-router'
 import Login from '../views/login/login.vue'
 import Dashboard from '../components/dashboard.vue'
 import Dashhome from '../components/dashhome.vue'
-import AccoutSetting from '../views/acount/account-setting.vue'
-// import Orders from '../views/orders/orders.vue'
-import allorders from '../views/orders/allorders.vue'
-import deleteorders from '../views/orders/deleteorders.vue'
-import Storages from '../views/storage/storages.vue'
-import forecaststorage from '../views/storage/forecaststorage.vue'
-import bulkstorage from '../views/storage/bulkstorage.vue'
-import allrecords from '../views/storage/allrecords.vue'
-import recordsbin from '../views/storage/recordsbin.vue'
-import returningbin from '../views/storage/returningbin.vue'
-import shipmentbin from '../views/storage/shipmentbin.vue'
-import directorder from '../views/storage/directorder.vue'
-import returningstock from '../views/storage/returningstock.vue'
-import batchorder from '../views/storage/batchorder.vue'
-import totalorder from '../views/storage/totalorder.vue'
-import orderrecycle from '../views/storage/orderrecycle.vue'
-import fbashiping from '../views/storage/fbashiping.vue'
-import tuning from '../views/storage/tuning.vue'
-import clearinventory from '../views/storage/clearinventory.vue'
-import inventoryrecord from '../views/storage/inventoryrecord.vue'
-import operationflow from '../views/storage/operationflow.vue'
-import Product from '../views/product/product.vue'
+// import Orders from '../views-store/orders/orders.vue'
 import ProductStore from '../views-store/product/product.vue'
 
-import Warehouse from '../views/warehouse/warehouse.vue'
-import allgoods from '../views/warehouse/allgoods.vue'
-import deletegoods from '../views/warehouse/deletegoods.vue'
-import sys from '../views/sys/index.vue'
-import WarehouseList from '../views/warehouse-list/index.vue'
+import Storages from '../views-store/storage/storages.vue'
+import forecaststorage from '../views-store/storage/forecaststorage.vue'
+import bulkstorage from '../views-store/storage/bulkstorage.vue'
+import allrecords from '../views-store/storage/allrecords.vue'
+import recordsbin from '../views-store/storage/recordsbin.vue'
+import returningbin from '../views-store/storage/returningbin.vue'
+import shipmentbin from '../views-store/storage/shipmentbin.vue'
+import directorder from '../views-store/storage/directorder.vue'
+import returningstock from '../views-store/storage/returningstock.vue'
+import batchorder from '../views-store/storage/batchorder.vue'
+import totalorder from '../views-store/storage/totalorder.vue'
+import orderrecycle from '../views-store/storage/orderrecycle.vue'
+import fbashiping from '../views-store/storage/fbashiping.vue'
+import tuning from '../views-store/storage/tuning.vue'
+import clearinventory from '../views-store/storage/clearinventory.vue'
+import inventoryrecord from '../views-store/storage/inventoryrecord.vue'
+import operationflow from '../views-store/storage/operationflow.vue'
 
 Vue.use(VueRouter)
 
@@ -55,36 +46,9 @@ const routes = [{
     component: Dashhome
   },
   {
-    path: '/account',
-    name: '账户信息',
-    component: AccoutSetting
-  },
-  {
-    path: '/product',
-    name: '产品信息',
-    component: Product
-  },
-  {
     path: '/product-store',
-    name: '产品信息',
+    name: '产品信息(仓库)',
     component: ProductStore
-  },
-  {
-    path: '/orders',
-    name: '订单管理',
-    component: allorders,
-    redirect: '/allorders',
-    children: [{
-      path: '/allorders',
-      name: '所有订单',
-      component: allorders
-    },
-    {
-      path: '/deleteorders',
-      name: '删除订单',
-      component: deleteorders
-    }
-    ]
   },
   {
     path: '/storages',
@@ -182,50 +146,10 @@ const routes = [{
       component: operationflow
     }
     ]
-  },
-  {
-    path: '/warehouse',
-    name: '仓库管理',
-    component: Warehouse,
-    redirect: '/allgoods',
-    children: [{
-      path: '/allgoods',
-      name: '所有商品',
-      component: allgoods
-    },
-    {
-      path: '/deletegoods',
-      name: '删除商品',
-      component: deletegoods
-    }
-    ]
-  },
-  {
-    path: '/warehouse-list',
-    name: '仓库列表',
-    component: WarehouseList,
-    // redirect: '/allgoods',
-    children: [{
-      path: '/allgoods',
-      name: '所有商2品',
-      component: allgoods
-    },
-    {
-      path: '/deletegoods',
-      name: '删除3商品',
-      component: deletegoods
-    }
-    ]
-  },
-  {
-    path: '/sys',
-    name: '系统设置 > 库位管理',
-    component: sys
   }
   ]
 }
 ]
-
 // const routesForStore = [{
 //   path: '/',
 //   redirect: '/login'

@@ -2,6 +2,7 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
+import storeRouter from './router/strore-router'
 import './plugins/element.js'
 import Meta from 'vue-meta'
 
@@ -32,8 +33,12 @@ Vue.component(CollapseTransition.name, CollapseTransition)
 Vue.use(Meta)
 Vue.use(VueClipboard)
 
-new Vue({
-  router,
-  store,
-  render: h => h(App)
-}).$mount('#app')
+export function bootstrop(_rooter) {
+  new Vue({
+    router: _rooter,
+    store,
+    render: h => h(App)
+  }).$mount('#app')
+}
+
+bootstrop(localStorage.role === 'SELLER' ? router : storeRouter)

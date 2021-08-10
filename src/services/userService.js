@@ -11,6 +11,7 @@ export default class UserService {
           if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
             window.localStorage.setItem('wms_auth_access_token', res.payload.token)
             window.localStorage.setItem('wms_auth_expires', res.payload.token_expire)
+            window.localStorage.setItem('role', res.data.role)
             resolve(res.data)
           } else {
             reject(res.payload)
@@ -79,9 +80,6 @@ export default class UserService {
     return new Promise((resolve, reject) => {
       Axios.fetchGet(urls.PERSONAL_INFO, null).then(
         (res) => {
-          console.log(1111)
-          console.log(res)
-          console.log(2222)
           if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
             resolve(res.data)
           } else {

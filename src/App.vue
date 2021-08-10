@@ -8,6 +8,7 @@
 <script>
 export default {
   name: 'app',
+  computed: {},
   metaInfo() {
     return {
       title: 'WMS全球仓库管理系统',
@@ -24,12 +25,23 @@ export default {
 }
 </script>
 
-<style>
+<style lang="less">
 .fa {
   margin-right: 5px;
   width: 24px;
   text-align: center;
   font-size: 18px;
   vertical-align: middle;
+}
+.clear:after {
+  content: '';
+  height: 0;
+  line-height: 0;
+  display: block;
+  visibility: hidden;
+  clear: both;
+}
+.text-right {
+  text-align: right;
 }
 </style>

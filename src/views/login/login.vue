@@ -292,9 +292,9 @@ export default {
     return {
       options: provinceAndCityData,
       loginForm: {
-        email: null,
-        password: null,
-        companyname: null,
+        email: 'larryguolz@gmail.com',
+        password: 'testpassword',
+        companyname: 'test company',
         rememberMe: 1
       },
       registryForm: {

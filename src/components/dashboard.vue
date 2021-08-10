@@ -111,9 +111,7 @@ export default {
       userService
         .getUserInfo()
         .then((res) => {
-          console.log(res)
           this.$store.commit('setRole', res.role)
-          console.log(this.$store.getters.getRole)
         })
         .catch((err) => {
           console.log(err)

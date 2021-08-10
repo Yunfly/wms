@@ -84,8 +84,8 @@
           <template slot-scope="scope">
             <div>
               <img src="" alt="" />
-              <span>{{ ifempty(scope.row.sku) }}</span>
-              <!-- <el-popover
+              <span>{{ ifempty(scope.row.selsku) }}</span>
+              <el-popover
                 placement="right-start"
                 title=""
                 trigger="hover"
@@ -102,7 +102,7 @@
                   </div>
                 </div>
                 <i class="el-icon-question" slot="reference"></i>
-              </el-popover> -->
+              </el-popover>
             </div>
           </template>
         </el-table-column>
