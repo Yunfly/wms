@@ -25,6 +25,9 @@ import clearinventory from '../views-store/storage/clearinventory.vue'
 import inventoryrecord from '../views-store/storage/inventoryrecord.vue'
 import operationflow from '../views-store/storage/operationflow.vue'
 
+import sys from '../views-store/sys/index.vue'
+import StoreInfo from '../views-store/sys/storehouse-info.vue'
+
 Vue.use(VueRouter)
 
 const routes = [{
@@ -144,6 +147,17 @@ const routes = [{
       path: '/operationflow',
       name: '操作流水',
       component: operationflow
+    }
+    ]
+  },
+  {
+    path: '/sys',
+    name: '系统设置 > 我的仓库',
+    component: sys,
+    children: [{
+      path: '/store-info',
+      name: '我的仓库',
+      component: StoreInfo
     }
     ]
   }

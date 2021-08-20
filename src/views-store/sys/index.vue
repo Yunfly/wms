@@ -22,7 +22,7 @@
         :class="menuactive == '/store-info' ? 'isactive' : ''"
         @click="cliclmenu('/store-info')"
       >
-        店铺信息
+        我的仓库
       </div>
     </div>
     <!-- 表格功能列 -->

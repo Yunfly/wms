@@ -32,6 +32,7 @@ import Warehouse from '../views/warehouse/warehouse.vue'
 import allgoods from '../views/warehouse/allgoods.vue'
 import deletegoods from '../views/warehouse/deletegoods.vue'
 import sys from '../views/sys/index.vue'
+import StoreInfo from '../views/sys/store-info.vue'
 import WarehouseList from '../views/warehouse-list/index.vue'
 
 Vue.use(VueRouter)
@@ -220,7 +221,13 @@ const routes = [{
   {
     path: '/sys',
     name: '系统设置 > 库位管理',
-    component: sys
+    component: sys,
+    children: [{
+      path: '/store-info',
+      name: '店铺信息',
+      component: StoreInfo
+    }
+    ]
   }
   ]
 }

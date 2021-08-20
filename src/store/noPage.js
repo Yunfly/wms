@@ -80,7 +80,7 @@ const actions = {
       }))
 
       ctx.commit('updateStates', {
-        dataSource: res.data.content,
+        dataSource: res.data.content || res.data.records,
         pagination: {
           ...ctx.state.pagination
         },

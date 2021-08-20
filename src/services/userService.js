@@ -2,6 +2,12 @@ import Axios from '../https/axios'
 import * as cookieStore from '../https/cookieStore'
 import urls from '../https/urls.js'
 import * as commonConst from '../const/common'
+// import {
+//   bootstrop
+// } from '../main'
+
+// import router from '../router'
+// import storeRouter from '../router/strore-router'
 
 export default class UserService {
   static login(params) {
@@ -11,7 +17,6 @@ export default class UserService {
           if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
             window.localStorage.setItem('wms_auth_access_token', res.payload.token)
             window.localStorage.setItem('wms_auth_expires', res.payload.token_expire)
-            window.localStorage.setItem('role', res.data.role)
             resolve(res.data)
           } else {
             reject(res.payload)
@@ -81,6 +86,11 @@ export default class UserService {
       Axios.fetchGet(urls.PERSONAL_INFO, null).then(
         (res) => {
           if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
+            // TODO: 后面通过角色权限控制用户展示的路由
+            // if (localStorage.role !== res.data.role) {
+            //   bootstrop(res.data.role === 'SELLER' ? router : storeRouter)
+            //   window.localStorage.setItem('role', res.data.role)
+            // }
             resolve(res.data)
           } else {
             reject(res.payload)

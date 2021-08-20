@@ -1,6 +1,6 @@
 <template>
   <div class="product-container">
-    <div class="filter-container">
+    <div class="filter-container" v-if="searchForm">
       <el-form :inline="true" size="small" :model="searchForm" ref="searchForm">
         <slot name="filter"></slot>
         <el-form-item style="width: 300px">
@@ -44,7 +44,7 @@
         <slot name="table"></slot>
       </el-table>
       <div class="tableactions-container">
-        <div v-show="options.length">
+        <div v-show="options && options.length">
           <el-select v-model="value" placeholder="选择执行的操作">
             <el-option
               v-for="item in options"
@@ -89,7 +89,7 @@ export default {
   },
   data() {
     return {
-      value: this.options.find((x) => x.isDefault).value
+      value: this.options ? this.options.find((x) => x.isDefault).value : []
     }
   },
   computed: {
