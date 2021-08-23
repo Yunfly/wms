@@ -40,11 +40,12 @@
           </template>
         </el-table-column>
         <el-table-column label="操作" align="center">
+          {{ userInfo.email }}
           <el-button title="编辑" type="primary" size="mini"
             >分配权限
           </el-button>
 
-          <!-- <el-button title="删除" type="danger" size="mini">删除 </el-button> -->
+          <el-button title="删除" type="danger" size="mini">删除 </el-button>
         </el-table-column>
       </template>
 
@@ -60,10 +61,15 @@
       <el-form
         :model="this.editForm"
         size="small"
+        :rules="loginRules"
         ref="editForm"
         labelPosition="top"
       >
         <el-form-item label="仓库名称:" prop="name">
+          <el-input v-model="editForm.name"> </el-input
+        ></el-form-item>
+
+        <el-form-item label="仓库面积:" prop="name">
           <el-input v-model="editForm.name"> </el-input
         ></el-form-item>
 
@@ -80,8 +86,20 @@
         ></el-form-item>
 
         <el-form-item label="州/state:" prop="state">
-          <el-input type="input" v-model="editForm.state"> </el-input
-        ></el-form-item>
+          <el-select
+            v-model="editForm.state"
+            placeholder="state"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="item in states"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
 
         <el-form-item label="国家/country:" prop="country">
           <el-input type="input" v-model="editForm.country"> </el-input
@@ -107,6 +125,7 @@
 <script>
 import noPage from '@/components/noPage/noPage.vue'
 import Axios from '@/https/axios'
+import { mapGetters, mapState } from 'vuex'
 
 // /api/warehouse/listPository
 export default {
@@ -122,8 +141,60 @@ export default {
         zipcode: '',
         phone: ''
       },
-      importdialogVisible: false
+      importdialogVisible: false,
+      loginRules: {
+        name: [
+          {
+            required: true,
+            trigger: 'blur'
+          }
+        ],
+        main_street: [
+          {
+            required: true,
+            trigger: 'blur'
+          }
+        ],
+        city: [
+          {
+            required: true,
+            trigger: 'blur'
+          }
+        ],
+        zipcode: [
+          {
+            required: true,
+            trigger: 'blur'
+          }
+        ],
+        state: [
+          {
+            required: true,
+            trigger: 'blur'
+          }
+        ],
+        country: [
+          {
+            required: true,
+            trigger: 'blur'
+          }
+        ],
+        phone: [
+          {
+            required: true,
+            trigger: 'blur'
+          }
+        ]
+      }
     }
+  },
+  computed: {
+    ...mapState({
+      states: 'states'
+    }),
+    ...mapGetters({
+      userInfo: 'getUserInfo'
+    })
   },
   components: { noPage },
   beforeMount() {

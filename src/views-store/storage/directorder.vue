@@ -20,7 +20,7 @@
             label=""
           ></CrudSelect>
         </el-form-item>
-        <el-form-item label="文件上传:" prop="sku" style="width: 40%">
+        <el-form-item label="上传运单:" prop="sku" style="width: 40%">
           <el-upload
             class="upload-demo"
             action="#"
@@ -84,45 +84,28 @@
           ></el-input>
         </el-form-item>
         <el-form-item label="区域:" prop="area" style="width: 60%">
-          <el-select
-            v-model="directorderForm.area"
-            placeholder="请选择"
-            style="width: 30%; margin-right: 2%"
-          >
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            >
-            </el-option>
-          </el-select>
-          <el-select
-            v-model="directorderForm.area"
-            placeholder="请选择"
-            style="width: 30%; margin-right: 2%"
-          >
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            >
-            </el-option>
-          </el-select>
-          <el-select
-            v-model="directorderForm.area"
-            placeholder="请选择"
-            style="width: 30%"
-          >
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            >
-            </el-option>
-          </el-select>
+          <el-row type="flex" justify="space-between">
+            <el-col :span="7">
+              <el-input placeholder="请输入城市：" />
+            </el-col>
+            <el-col :span="7">
+              <el-select
+                v-model="directorderForm.area"
+                placeholder="请选择州/省："
+              >
+                <el-option
+                  v-for="item in states"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                </el-option>
+              </el-select>
+            </el-col>
+            <el-col :span="7">
+              <el-input placeholder="请输入国家：" value="美国" />
+            </el-col>
+          </el-row>
         </el-form-item>
       </el-form>
     </div>
@@ -216,18 +199,11 @@
           </el-table-column>
           <el-table-column prop="totalweight" label="合计重量">
             <template slot-scope="scope">
-              <el-form-item
-                :prop="'products.' + scope.$index + '.totalweight'"
-                :rules="[
-                  { required: true, message: '请输入数量', trigger: 'blur' }
-                ]"
-              >
-                <el-input
-                  v-model.number="scope.row.totalweight"
-                  style="width: 100%"
-                  disabled
-                ></el-input>
-              </el-form-item>
+              <el-input
+                :value="scope.row.weight * scope.row.count"
+                style="width: 100%"
+                disabled
+              ></el-input>
             </template>
           </el-table-column>
           <el-table-column prop="describe" label="备注">
@@ -239,16 +215,16 @@
                 ]"
               >
                 <el-input
+                  type="textarea"
                   v-model.number="scope.row.describe"
                   style="width: 100%"
-                  disabled
                 ></el-input>
               </el-form-item>
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="55px">
-            <template slot-scope="scope">
-              <i class="el-icon-delete" @click="deleteRow(scope.$index)"></i>
+          <el-table-column label="操作" width="55px" align="center">
+            <template v-if="scope.$index > 0" slot-scope="scope">
+              <i class="el-icon-delete" @click="deleteRow(scope.$index)"> </i>
             </template>
           </el-table-column>
         </el-table>
@@ -383,11 +359,17 @@
 
 <script>
 import CrudSelect from '../../components/avue/crud-select.vue'
+import { mapState } from 'vuex'
 export default {
   components: {
     CrudSelect
   },
   created() {},
+  computed: {
+    ...mapState({
+      states: 'states'
+    })
+  },
   data() {
     return {
       directorderForm: {
@@ -412,25 +394,31 @@ export default {
         plunit: 'cm',
         prepweight: null,
         pwkey: '默认自动填充总重量',
-        products: []
+        products: [
+          { name: '', count: 0, weight: 2, totalweight: 0, describe: '' }
+        ]
       },
       directorderRules: {
-        cangku: [{ required: true, message: '请选择仓库', trigger: 'blur' }],
-        sendername: [
-          { required: true, message: '请选择仓库', trigger: 'blur' }
+        cangku: [
+          { required: true, message: '请选择当前仓库', trigger: 'blur' }
         ],
-        orderNo: [{ required: true, message: '请选择仓库', trigger: 'blur' }],
-        recipient: [{ required: true, message: '请选择仓库', trigger: 'blur' }],
+        sendername: [
+          { required: true, message: '请输入发件人姓名', trigger: 'blur' }
+        ],
+        orderNo: [{ required: true, message: '请输入订单号', trigger: 'blur' }],
+        recipient: [
+          { required: true, message: '请输入收件人姓名', trigger: 'blur' }
+        ],
         recipientcall: [
-          { required: true, message: '请选择仓库', trigger: 'blur' }
+          { required: true, message: '请输入收件人电话', trigger: 'blur' }
         ],
         recipientaddress1: [
-          { required: true, message: '请选择仓库', trigger: 'blur' }
+          { required: true, message: '请输入收件人地址', trigger: 'blur' }
         ],
         recipientaddress2: [
-          { required: true, message: '请选择仓库', trigger: 'blur' }
+          { required: true, message: '请输入收件人地址2', trigger: 'blur' }
         ],
-        area: [{ required: true, message: '请选择仓库', trigger: 'blur' }]
+        area: [{ required: true, message: '请输入区域', trigger: 'blur' }]
       },
       cangkus: [
         { label: '仓库1', value: '1' },

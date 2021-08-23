@@ -70,7 +70,7 @@
     <!-- 表格功能列 -->
     <div class="twoheight1">
       <div class="table-menu">
-        <div class="table-menu-left">
+        <div class="table-menu-left" style="margin-bottom: 20px">
           <el-button-group>
             <el-button size="small" class="filter-item" type="primary"
               >全部订单
@@ -187,7 +187,9 @@
     >
       <div>
         <el-form :inline="true" v-model="reviewDetail" ref="reviewDetail">
-          <p class="review-form-section">入库批次号：{{ ifempty(reviewDetail.batchcode) }}</p>
+          <p class="review-form-section">
+            入库批次号：{{ ifempty(reviewDetail.batchcode) }}
+          </p>
           <p class="review-form-section">预报物品信息：</p>
           <el-table border fit :data="reviewDetail.rows">
             <el-table-column label="参考码">

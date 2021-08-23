@@ -26,6 +26,9 @@ export default {
 </script>
 
 <style lang="less">
+body {
+  min-width: 1300px;
+}
 .fa {
   margin-right: 5px;
   width: 24px;

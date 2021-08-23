@@ -45,7 +45,7 @@
             <el-option label="eBay" value="eBay"></el-option> </el-select
         ></el-form-item>
         <el-form-item label="自定义店铺名称:" prop="diy_name">
-          <el-input  v-model="editForm.diy_name"> </el-input
+          <el-input v-model="editForm.diy_name"> </el-input
         ></el-form-item>
 
         <el-form-item
@@ -101,8 +101,12 @@
             v-model="editForm.address"
             size="mini"
           >
-            <el-option label="Amazon" value="1"></el-option>
-            <el-option label="eBay" value="2"></el-option>
+            <el-option
+              v-for="item in countries"
+              :key="item"
+              :label="item"
+              :value="item"
+            />
           </el-select>
         </el-form-item>
       </el-form>
@@ -121,6 +125,23 @@ import noPage from '@/components/noPage/noPage.vue'
 export default {
   data() {
     return {
+      countries: [
+        'US',
+        'CA',
+        'MX',
+        'BR',
+        'AE',
+        'DE',
+        'ES',
+        'FR',
+        'GB',
+        'IN',
+        'IT',
+        'TR',
+        'AU',
+        'JP',
+        'CN'
+      ],
       editForm: {
         name: 'Amazon',
         diy_name: '',

@@ -4,15 +4,15 @@
       <div
         class="aside-item3"
         :class="menuactive == '/sys' ? 'isactive' : ''"
-        @click="cliclmenu('/storagedashboard')"
+        @click="cliclmenu('/')"
       >
         我的信息
       </div>
       <!--TODO-->
       <div
         class="aside-item3"
-        :class="menuactive == '/sproduct' ? 'isactive' : ''"
-        @click="cliclmenu('/sproduct')"
+        :class="menuactive == '/' ? 'isactive' : ''"
+        @click="cliclmenu('/')"
       >
         公司信息
       </div>
@@ -26,7 +26,7 @@
       </div>
     </div>
     <!-- 表格功能列 -->
-    <el-main>
+    <el-main style="border-top: 1px solid #dcdfe9">
       <div class="mainview">
         <router-view></router-view></div
     ></el-main>

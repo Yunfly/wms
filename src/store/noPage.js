@@ -25,7 +25,7 @@ const state = {
     number: 1,
     size: 10
   },
-  pageTotal: 100,
+  pageTotal: null,
   filters: {},
   loading: false
 }
@@ -84,7 +84,7 @@ const actions = {
         pagination: {
           ...ctx.state.pagination
         },
-        pageTotal: res.data.totalElements
+        pageTotal: res.data.totalElements || res.data.total
 
       })
     } catch (error) {

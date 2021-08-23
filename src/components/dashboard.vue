@@ -11,7 +11,9 @@
           <el-submenu index="1">
             <template slot="title">
               <el-avatar>User</el-avatar>
-              <label class="usr-tag hidden-sm-and-down">UserName</label>
+              <label class="usr-tag hidden-sm-and-down">{{
+                userInfo.lastname
+              }}</label>
             </template>
             <el-menu-item index="">
               <i class="el-icon-user-solid"></i>
@@ -92,6 +94,7 @@
 <script>
 import userService from '../services/userService'
 import breadcrumb from '../components/breadcrumb.vue'
+import { mapGetters } from 'vuex'
 export default {
   components: {
     breadcrumb
@@ -101,6 +104,11 @@ export default {
       menuactive: '/dashboard',
       userrole: 2
     }
+  },
+  computed: {
+    ...mapGetters({
+      userInfo: 'getUserInfo'
+    })
   },
   methods: {
     logout() {
@@ -112,6 +120,7 @@ export default {
         .getUserInfo()
         .then((res) => {
           this.$store.commit('setRole', res.role)
+          this.$store.commit('setUserInfo', res)
         })
         .catch((err) => {
           console.log(err)

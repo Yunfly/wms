@@ -152,7 +152,7 @@ const routes = [{
   },
   {
     path: '/sys',
-    name: '系统设置 > 我的仓库',
+    name: '系统设置 > 仓库信息',
     component: sys,
     children: [{
       path: '/store-info',

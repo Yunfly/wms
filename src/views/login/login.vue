@@ -285,7 +285,7 @@
 <script>
 import userService from '../../services/userService'
 import { provinceAndCityData, CodeToText } from 'element-china-area-data'
-import states_hash from './states_hash.json'
+import states_hash from '@/util/states_hash.json'
 
 export default {
   data() {
@@ -373,7 +373,6 @@ export default {
       inTheLogin: false,
       registering: false,
       states: Object.values(states_hash).map((x) => {
-        console.log(states_hash)
         return {
           value: x,
           label: x

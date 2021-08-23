@@ -26,7 +26,7 @@
       </div>
     </div>
     <!-- 表格功能列 -->
-    <el-main>
+    <el-main style="border-top: 1px solid #dcdfe9">
       <div class="mainview">
         <router-view></router-view></div
     ></el-main>

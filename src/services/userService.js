@@ -86,11 +86,6 @@ export default class UserService {
       Axios.fetchGet(urls.PERSONAL_INFO, null).then(
         (res) => {
           if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
-            // TODO: 后面通过角色权限控制用户展示的路由
-            // if (localStorage.role !== res.data.role) {
-            //   bootstrop(res.data.role === 'SELLER' ? router : storeRouter)
-            //   window.localStorage.setItem('role', res.data.role)
-            // }
             resolve(res.data)
           } else {
             reject(res.payload)

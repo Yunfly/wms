@@ -41,4 +41,5 @@ export function bootstrop(_rooter) {
   }).$mount('#app')
 }
 
+console.log(localStorage.role === 'SELLER')
 bootstrop(localStorage.role === 'SELLER' ? router : storeRouter)

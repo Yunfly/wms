@@ -6,8 +6,12 @@
         <p>批次预报信息</p>
       </div>
       <div class="">
-        <el-form-item label="入库批次号:" prop="warsehouse" style="width: 100%">
-          <el-select placeholder>
+        <el-form-item
+          label="入库批次号:"
+          prop="warsehouse"
+          style="width: 100%; margin-top: 10px"
+        >
+          <el-select placeholder size="small">
             <el-option
               v-for="(item, index) in products"
               :key="index"
