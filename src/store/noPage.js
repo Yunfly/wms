@@ -17,10 +17,7 @@ export function filterObject(obj) {
 const state = {
   useName: 'sam',
   api: '',
-  dataSource: [{
-    rid: 1,
-    name: 1
-  }],
+  dataSource: [],
   pagination: {
     number: 1,
     size: 10

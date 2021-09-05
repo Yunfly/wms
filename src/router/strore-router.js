@@ -10,7 +10,7 @@ import ProductStore from '../views-store/product/product.vue'
 import Storages from '../views-store/storage/storages.vue'
 import forecaststorage from '../views-store/storage/forecaststorage.vue'
 import bulkstorage from '../views-store/storage/bulkstorage.vue'
-import allrecords from '../views-store/storage/allrecords.vue'
+import allrecords from '../views-store/storage/allrecords2.vue'
 import recordsbin from '../views-store/storage/recordsbin.vue'
 import returningbin from '../views-store/storage/returningbin.vue'
 import shipmentbin from '../views-store/storage/shipmentbin.vue'
@@ -25,8 +25,11 @@ import clearinventory from '../views-store/storage/clearinventory.vue'
 import inventoryrecord from '../views-store/storage/inventoryrecord.vue'
 import operationflow from '../views-store/storage/operationflow.vue'
 
+import UserList from '../views-store/user-list/index.vue'
+
 import sys from '../views-store/sys/index.vue'
 import StoreInfo from '../views-store/sys/storehouse-info.vue'
+import Ht from '../views-store/sys/ht.vue'
 
 Vue.use(VueRouter)
 
@@ -47,6 +50,11 @@ const routes = [{
     path: '/dashboard',
     name: '数据报表',
     component: Dashhome
+  },
+  {
+    path: '/user-list',
+    name: '用户列表',
+    component: UserList
   },
   {
     path: '/product-store',
@@ -158,6 +166,11 @@ const routes = [{
       path: '/store-info',
       name: '我的仓库',
       component: StoreInfo
+    },
+    {
+      path: '/ht',
+      name: '合同条款',
+      component: Ht
     }
     ]
   }
@@ -175,7 +188,7 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   // 检查登入状态
-  var islogin = false
+  var islogin = true
   var token = window.localStorage.getItem('wms_auth_access_token')
   var expires = window.localStorage.getItem('wms_auth_expires')
   if (token && expires && Number(expires) > new Date().getTime()) {

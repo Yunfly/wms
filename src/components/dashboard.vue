@@ -64,7 +64,7 @@
             <i class="icon iconfont icon-ziyuan3"></i>
             <span slot="title">订单管理</span>
           </el-menu-item>
-          <el-menu-item index="">
+          <el-menu-item index="/user-list" v-if="userrole == 2">
             <i class="icon iconfont icon-xingzhuang102"></i>
             <span slot="title">用户列表</span>
           </el-menu-item>

@@ -4,7 +4,7 @@ import * as commonConst from '../const/common'
 export default class ProductService {
   static getListData(params) {
     return new Promise((resolve, reject) => {
-      Axios.fetchGet('/get', params, true).then(
+      Axios.fetchGet('/iteminfo/get', params, true).then(
         (res) => {
           if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
             resolve(res.data)

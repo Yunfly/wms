@@ -1,6 +1,27 @@
+/**
+
+/api/warehouse/firstpass/forecast 入库
+enum type{
+  "包裹入库"： false 不传
+  "SKU入库"： true
+}
+
+/api/biz/firstpass/{id}入库记录详情
+goods 仓库填的货物入库
+
+packs 卖家填写的预报信息
+
+SKU入库，包裹packs中 goods*services 展示服务
+  */
+
 <template>
   <div class="forecaststorage-container">
-    <el-form :model="storageFrom" :rules="storageRules" ref="storageFrom">
+    <el-form
+      :model="storageFrom"
+      size="small"
+      :rules="storageRules"
+      ref="storageFrom"
+    >
       <div class="title">
         <i class="fa fa-bookmark"></i>
         <p>批次预报信息</p>
@@ -86,52 +107,135 @@
       </div>
       <br />
       <el-form-item prop="warsehouse" style="width: 100%">
-        <el-radio-group size="small">
+        <el-radio-group size="small" v-model="radio1">
           <el-radio-button label="按包裹数目入库"></el-radio-button>
           <el-radio-button label="按SKU入库"></el-radio-button>
         </el-radio-group>
       </el-form-item>
       <el-radio label="1" v-model="datetype">手动入库</el-radio>
       <el-radio label="2" v-model="datetype">扫描入库</el-radio>
+
+      <el-button
+        type="primary"
+        style="float: right; margin: 0 20px 10px 0"
+        @click="handleSkuAdd"
+        size="small"
+        v-if="datetype === '1'"
+        icon=" icon iconfont icon-jia"
+        >添加SKU</el-button
+      >
       <br />
       <br />
 
       <el-table
         v-if="datetype === '1'"
-        :data="storageFrom.packages"
+        :data="storageFrom.skuList"
         border
         class="product-table"
       >
         <el-table-column label="SKU" width="300px">
           <template slot-scope="scope">
-            <div>
+            <el-form-item
+              style="margin: 0"
+              :prop="'storageFrom.skuList.' + scope.$index + '.sku'"
+            >
+              <el-input v-model="scope.row.sku"> </el-input>
+            </el-form-item>
+            <!-- <div>
               <span>{{ ifempty(scope.row.code) }}</span>
-            </div>
+            </div> -->
           </template>
         </el-table-column>
         <el-table-column label="数目" width="150px">
           <template slot-scope="scope">
-            <div>
-              <span>{{ ifempty(scope.row.count) }}</span>
-            </div>
+            <el-form-item
+              style="margin: 0"
+              :prop="'storageFrom.skuList.' + scope.$index + '.number'"
+            >
+              <el-input v-model="scope.row.number"> </el-input>
+            </el-form-item>
           </template>
         </el-table-column>
-        <el-table-column label="实收数目" width="275px"> 200 </el-table-column>
+        <el-table-column label="实收数目" width="275px">
+          <template slot-scope="scope">
+            <el-form-item
+              style="margin: 0"
+              :prop="'storageFrom.skuList.' + scope.$index + '.count'"
+            >
+              <el-input v-model="scope.row.count"> </el-input>
+            </el-form-item>
+          </template>
+        </el-table-column>
         <el-table-column label="操作">
-          <el-button type="warning" @click="handleSubmit">删除</el-button>
+          <template slot-scope="scope">
+            <el-button
+              type="warning"
+              @click="handleDeleteSku(scope.$index)"
+              size="small"
+              >删除</el-button
+            >
+          </template>
         </el-table-column>
       </el-table>
-      <el-form-item
-        v-if="datetype === '2'"
-        prop="warsehouse"
-        style="width: 100%"
+
+      <upload-excel-component
+        v-if="datetype === '2' && storageFrom.skuList.length === 0"
+        :on-success="handleSuccess"
+        :before-upload="beforeUpload"
+      />
+      <el-table
+        v-if="datetype === '2' && storageFrom.skuList.length > 0"
+        :data="storageFrom.skuList"
+        border
+        class="product-table"
       >
-        <el-input type="textarea" :rows="4" placeholder="请输入内容">
-        </el-input>
-      </el-form-item>
+        <el-table-column label="SKU" width="300px">
+          <template slot-scope="scope">
+            <el-form-item
+              style="margin: 0"
+              :prop="'storageFrom.skuList.' + scope.$index + '.sku'"
+            >
+              <el-input v-model="scope.row.sku"> </el-input>
+            </el-form-item>
+            <!-- <div>
+              <span>{{ ifempty(scope.row.code) }}</span>
+            </div> -->
+          </template>
+        </el-table-column>
+        <el-table-column label="数目" width="150px">
+          <template slot-scope="scope">
+            <el-form-item
+              style="margin: 0"
+              :prop="'storageFrom.skuList.' + scope.$index + '.number'"
+            >
+              <el-input v-model="scope.row.number"> </el-input>
+            </el-form-item>
+          </template>
+        </el-table-column>
+        <el-table-column label="实收数目" width="275px">
+          <template slot-scope="scope">
+            <el-form-item
+              style="margin: 0"
+              :prop="'storageFrom.skuList.' + scope.$index + '.count'"
+            >
+              <el-input v-model="scope.row.count"> </el-input>
+            </el-form-item>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作">
+          <template slot-scope="scope">
+            <el-button
+              type="warning"
+              @click="handleDeleteSku(scope.$index)"
+              size="small"
+              >删除</el-button
+            >
+          </template>
+        </el-table-column>
+      </el-table>
       <br />
 
-      <el-button type="primary">确认</el-button>
+      <!-- <el-button type="primary">确认</el-button> -->
       <br />
       <br />
 
@@ -159,8 +263,10 @@
       </el-row>
       <br /><br />
 
-      <el-button type="primary" @click="handleSubmit">入库</el-button>
-      <el-button>取消</el-button>
+      <el-button type="primary" @click="handleSubmit" size="small"
+        >入库</el-button
+      >
+      <el-button size="small">取消</el-button>
 
       <br /><br />
     </el-form>
@@ -169,18 +275,22 @@
 
 <script>
 import Axios from '@/https/axios'
+import UploadExcelComponent from '@/components/UploadExcel/index.vue'
 
 export default {
   created() {
     this.getItem()
   },
+  components: { UploadExcelComponent },
   data() {
     return {
       datetype: '1',
+      radio1: '',
       storageFrom: {
         warsehouse: '',
         logistics: '',
         shipmentNo: '',
+        skuList: [],
         packages: [
           {
             code: 'BHKFDSDSKFFHD',
@@ -241,12 +351,35 @@ export default {
     }
   },
   methods: {
+    beforeUpload(file) {
+      const isLt1M = file.size / 1024 / 1024 < 1
+
+      if (isLt1M) {
+        return true
+      }
+
+      this.$message({
+        message: '文件大于1M!',
+        type: 'warning'
+      })
+      return false
+    },
+    handleSuccess({ results, header }) {
+      this.storageFrom.skuList = results
+      // this.tableHeader = header
+    },
     async getItem() {
       const item = await Axios.fetchGet('/')
       this.storageFrom = item
     },
     ifempty(value) {
       return value || '--'
+    },
+    handleSkuAdd() {
+      this.storageFrom.skuList.push([])
+    },
+    handleDeleteSku(index) {
+      this.storageFrom.skuList.splice(index, 1)
     },
     handleSubmit() {
       this.$confirm(
@@ -261,6 +394,7 @@ export default {
         this.$refs.storageFrom.validate(async (valid) => {
           if (valid) {
             //  TODO: 更新数据
+            Axios.fetchPost('/warehouse/firstpass/forecast', this.storageFrom)
           } else {
             console.log('error submit!!')
             return false

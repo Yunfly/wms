@@ -2,24 +2,27 @@
   <div class="product-container">
     <div class="filter-container" v-if="searchForm">
       <el-form :inline="true" size="small" :model="searchForm" ref="searchForm">
-        <slot name="filter"></slot>
-        <el-form-item style="width: 300px">
-          <el-button
-            size="small"
-            @click="searchReset"
-            icon="icon iconfont icon-qingkong"
-            type="primary"
-            plain
-            >清空查询条件
-          </el-button>
-          <el-button
-            size="small"
-            type="primary"
-            icon="icon iconfont icon-chaxun"
-            @click="handleFilter"
-            >查询
-          </el-button>
-        </el-form-item>
+        <el-row type="flex" align="middle">
+          <el-col :span="20"> <slot name="filter"></slot> </el-col>
+          <el-col :span="4">
+            <el-button
+              size="small"
+              @click="searchReset"
+              icon="icon iconfont icon-qingkong"
+              type="primary"
+              plain
+              style="margin-bottom: 10px"
+              >清空查询条件
+            </el-button>
+            <el-button
+              size="small"
+              type="primary"
+              icon="icon iconfont icon-chaxun"
+              @click="handleFilter"
+              >查询
+            </el-button>
+          </el-col>
+        </el-row>
       </el-form>
     </div>
     <!-- 表格功能列 -->
@@ -101,7 +104,7 @@ export default {
       pageTotal: (state) => state.pageTotal
     })
   },
-  props: ['searchForm', 'options'],
+  props: ['searchForm', 'options', 'data'],
   watch: {
     value(val) {
       console.log(val)

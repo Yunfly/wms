@@ -201,7 +201,10 @@ export default {
     }
   },
   beforeMount() {
-    this.$store.commit('noPage/setApi', '/api/item/get')
+    this.$store.commit(
+      'noPage/setApi',
+      '/warehouse/firstpass/listRecords?positoryId=57ab8fd0f68c0bbbcb401d10b6838088'
+    )
   },
   methods: {
     ifempty(value) {
@@ -274,10 +277,6 @@ export default {
     }
 
     .el-input {
-      .el-input__inner {
-        padding: 0 0px 0 10px;
-      }
-
       .el-input-group__append {
         .el-select {
           .el-input {

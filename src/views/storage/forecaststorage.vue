@@ -1,3 +1,5 @@
+// TODO: 商品备注取消，增加包裹备注，和批次备注
+
 <template>
   <div class="forecaststorage-container">
     <div class="title">
@@ -13,6 +15,7 @@
         ref="storageFrom"
         :inline="true"
       >
+        <!-- 所有仓库列表 -->
         <el-form-item label="接受仓库:" prop="warsehouse" style="width: 40%">
           <CrudSelect
             :dic="cangkus"
@@ -391,6 +394,7 @@
           >
             <div>服务：</div>
             <el-form-item label="服务:" prop="serve">
+              <!-- GET /api/seller/getContractByModel 查看仓库某模块增值服务条款 -->
               <el-radio-group v-model="packageForm.serve">
                 <el-radio :label="1">$2/个普通产品检测</el-radio>
                 <el-radio :label="2">$2/个电子产品检测</el-radio>
@@ -406,6 +410,8 @@
         <el-button type="primary" @click="addpackage1">添加包裹</el-button>
       </span>
     </el-dialog>
+
+    <!-- TODO: 整体增加提交接口:  /api/seller/firstpass/forecast 预报 -->
   </div>
 </template>
 

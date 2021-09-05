@@ -1,26 +1,38 @@
 <template>
   <div>
-    <no-page>
+    <no-page :data="data">
       <template v-slot:table-menu-right>
         <el-button
           size="mini"
           class="filter-item"
-          @click="handleEdit"
+          @click="handleCreate"
           type="primary"
           plain
           >添加店铺
         </el-button>
       </template>
       <template v-slot:table>
-        <el-table-column label="店铺名称"></el-table-column>
-        <el-table-column label="平台名称"></el-table-column>
-        <el-table-column label="创建时间"></el-table-column>
+        <el-table-column label="店铺名称" prop="name"></el-table-column>
+        <el-table-column label="平台名称" prop="platform"></el-table-column>
+        <el-table-column label="创建时间" prop="createDate"></el-table-column>
         <el-table-column label="操作">
-          <el-button title="编辑" type="primary" @click="handleEdit" size="mini"
-            >编辑
-          </el-button>
+          <template slot-scope="scope">
+            <el-button
+              title="编辑"
+              type="primary"
+              @click="handleEdit(scope.row)"
+              size="mini"
+              >编辑
+            </el-button>
 
-          <el-button title="删除" type="danger" size="mini">删除 </el-button>
+            <el-button
+              title="删除"
+              type="danger"
+              @click="handleDelete(scope.row.id)"
+              size="mini"
+              >删除
+            </el-button>
+          </template>
         </el-table-column>
       </template>
 
@@ -28,7 +40,7 @@
     </no-page>
 
     <el-dialog
-      title="添加店铺"
+      :title="dialogTitle"
       :visible.sync="importdialogVisible"
       width="500px"
       :before-close="handleClose"
@@ -39,41 +51,45 @@
         ref="editForm"
         labelPosition="top"
       >
-        <el-form-item label="平台名称:" prop="name">
-          <el-select style="disable: block" v-model="editForm.name" size="mini">
+        <el-form-item label="平台名称:" prop="platform">
+          <el-select
+            style="disable: block"
+            v-model="editForm.platform"
+            size="mini"
+          >
             <el-option label="Amazon" value="Amazon"></el-option>
             <el-option label="eBay" value="eBay"></el-option> </el-select
         ></el-form-item>
-        <el-form-item label="自定义店铺名称:" prop="diy_name">
-          <el-input v-model="editForm.diy_name"> </el-input
+        <el-form-item label="自定义店铺名称:" prop="name">
+          <el-input v-model="editForm.name"> </el-input
         ></el-form-item>
 
         <el-form-item
           label="卖家编号:"
-          prop="no"
-          v-if="editForm.name === 'Amazon'"
+          prop="seller"
+          v-if="editForm.platform === 'Amazon'"
         >
-          <el-input v-model="editForm.no"> </el-input
+          <el-input v-model="editForm.seller"> </el-input
         ></el-form-item>
 
         <el-form-item
           label="WMS授权令牌:"
           prop="token"
-          v-if="editForm.name === 'Amazon'"
+          v-if="editForm.platform === 'Amazon'"
         >
           <el-input type="input" v-model="editForm.token"> </el-input
         ></el-form-item>
 
         <el-form-item
           label="店铺名称:"
-          prop="eBaytoken"
-          v-if="editForm.name === 'eBay'"
+          prop="token"
+          v-if="editForm.platform === 'eBay'"
         >
-          <el-input type="input" v-model="editForm.eBaytoken"> </el-input
+          <el-input type="input" v-model="editForm.token"> </el-input
         ></el-form-item>
         <div
           style="display: flex; justify-content: space-around"
-          v-if="editForm.name === 'eBay'"
+          v-if="editForm.platform === 'eBay'"
         >
           <el-button type="primary" size="small" @click="handleClose"
             >点击授权</el-button
@@ -85,20 +101,20 @@
 
         <el-form-item
           label="eBay token:"
-          prop="eBaytoken"
-          v-if="editForm.name === 'eBay'"
+          prop="token"
+          v-if="editForm.platform === 'eBay'"
         >
-          <el-input type="input" v-model="editForm.eBaytoken"> </el-input
+          <el-input type="input" v-model="editForm.token"> </el-input
         ></el-form-item>
 
         <el-form-item
           label="店铺地点:"
-          prop="address"
-          v-if="editForm.name === 'Amazon'"
+          prop="location"
+          v-if="editForm.platform === 'Amazon'"
         >
           <el-select
             style="disable: block"
-            v-model="editForm.address"
+            v-model="editForm.location"
             size="mini"
           >
             <el-option
@@ -113,7 +129,7 @@
 
       <span slot="footer" class="dialog-footer">
         <el-button @click="handleClose">取 消</el-button>
-        <el-button type="primary" @click="handleClose">确 定</el-button>
+        <el-button type="primary" @click="handldEditConfirm">确 定</el-button>
       </span>
     </el-dialog>
   </div>
@@ -121,10 +137,37 @@
 
 <script>
 import noPage from '@/components/noPage/noPage.vue'
+import Axios from '@/https/axios'
 
 export default {
+  beforeMount() {
+    // /api/seller/shop/listShop
+    this.$store.commit('noPage/setApi', '/seller/shop/listShop')
+  },
   data() {
     return {
+      data: [
+        {
+          createDate: '2021-09-05T09:05:37.630Z',
+          id: '1',
+          location: 'MX',
+          name: 'Amazon shop',
+          platform: 'Amazon',
+          seller: 'string',
+          token: 'string',
+          updateDate: '2021-09-05T09:05:37.630Z'
+        },
+        {
+          createDate: '2021-09-05T09:05:37.630Z',
+          id: '2',
+          location: 'US',
+          name: 'eBay shop',
+          platform: 'eBay',
+          seller: 'string',
+          token: 'string',
+          updateDate: '2021-09-05T09:05:37.630Z'
+        }
+      ],
       countries: [
         'US',
         'CA',
@@ -143,27 +186,69 @@ export default {
         'CN'
       ],
       editForm: {
-        name: 'Amazon',
-        diy_name: '',
-        size_unit: '1',
-        address: '',
+        platform: 'Amazon',
+        name: '',
+        location: '',
         token: '',
-        no: '',
-        eBaytoken: '',
-        width: ''
+        seller: '',
+        id: ''
       },
-      importdialogVisible: false
+      importdialogVisible: false,
+      dialogTitle: '添加店铺'
     }
   },
   components: { noPage },
   methods: {
-    handleEdit() {
+    handleEdit({ name, location, platform, seller, token, id }) {
+      console.log(location)
+      this.dialogTitle = '编辑店铺'
+      Object.assign(this.editForm, {
+        name,
+        location,
+        platform,
+        seller,
+        token,
+        id
+      })
+      this.importdialogVisible = true
+    },
+    async handldEditConfirm() {
+      const { id, ...params } = this.editForm
+      let url = ''
+
+      if (this.dialogTitle === '添加店铺') {
+        url = 'seller/shop/addShop'
+      } else {
+        url = `/seller/shop/${id}`
+      }
+      try {
+        await Axios.fetchPost(url, params)
+      } finally {
+        this.$store.dispatch('noPage/init')
+      }
+    },
+    handleCreate() {
+      this.dialogTitle = '添加店铺'
       this.importdialogVisible = true
     },
     handleClose() {
       console.log(1)
       this.$refs.editForm.resetFields()
       this.importdialogVisible = false
+    },
+    handleDelete(id) {
+      this.$confirm('是否删除该店铺', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        const url = `/seller/shop/${id}`
+        try {
+          await Axios.fetchDeleteRoute(url)
+        } finally {
+          this.$store.dispatch('noPage/init')
+        }
+      })
     }
   }
 }

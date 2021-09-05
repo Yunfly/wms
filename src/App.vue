@@ -47,4 +47,5 @@ body {
 .text-right {
   text-align: right;
 }
+
 </style>

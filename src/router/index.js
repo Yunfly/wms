@@ -33,6 +33,7 @@ import allgoods from '../views/warehouse/allgoods.vue'
 import deletegoods from '../views/warehouse/deletegoods.vue'
 import sys from '../views/sys/index.vue'
 import StoreInfo from '../views/sys/store-info.vue'
+import Ht from '../views/sys/ht.vue'
 import WarehouseList from '../views/warehouse-list/index.vue'
 
 Vue.use(VueRouter)
@@ -226,6 +227,11 @@ const routes = [{
       path: '/store-info',
       name: '店铺信息',
       component: StoreInfo
+    },
+    {
+      path: '/ht',
+      name: '合同条款',
+      component: Ht
     }
     ]
   }
@@ -244,7 +250,7 @@ const router = new VueRouter({
 
 router.beforeEach((to, from, next) => {
   // 检查登入状态
-  var islogin = false
+  var islogin = true
   var token = window.localStorage.getItem('wms_auth_access_token')
   var expires = window.localStorage.getItem('wms_auth_expires')
   if (token && expires && Number(expires) > new Date().getTime()) {

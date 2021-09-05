@@ -39,13 +39,33 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" align="center">
+        <el-table-column label="操作人">
           {{ userInfo.email }}
-          <el-button title="编辑" type="primary" size="mini"
-            >分配权限
-          </el-button>
+        </el-table-column>
 
-          <el-button title="删除" type="danger" size="mini">删除 </el-button>
+        <el-table-column
+          label="操作"
+          align="center"
+          fixed="right"
+          width="260px"
+        >
+          <template slot-scope="scope">
+            <el-button
+              title="合同管理"
+              type="primary"
+              size="mini"
+              @click="
+                $router.push({ path: '/ht', query: { id: scope.row.id } })
+              "
+              >合同管理
+            </el-button>
+
+            <el-button title="分配权限" type="primary" size="mini"
+              >分配权限
+            </el-button>
+
+            <el-button title="删除" type="danger" size="mini">删除 </el-button>
+          </template>
         </el-table-column>
       </template>
 
