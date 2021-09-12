@@ -96,7 +96,7 @@ const routes = [{
     children: [{
       path: '/sproduct',
       name: '仓库商品信息',
-      component: ProductStore
+      component: Product
     },
     {
       path: '/storagedashboard',

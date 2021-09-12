@@ -195,6 +195,7 @@ export default {
   },
   data() {
     return {
+      contractId: null,
       dialogVisible: false,
       warsehouse: '',
       datetype: '1',
@@ -227,6 +228,7 @@ export default {
           id: this.id
         })
         this.form = res.data.basic
+        if (res.data.id) this.contractId = res.data.id
         this.priceCardDate = res.data.others.map((x) => {
           return {
             name: x.name,
@@ -249,6 +251,7 @@ export default {
       await Axios.fetchPost('/warehouse/contract/addContract', {
         basic: this.form,
         pid: this.id,
+        id: this.contractId,
         others: this.priceCardDate.map((x) => {
           return {
             details: x.tableData,
@@ -257,6 +260,7 @@ export default {
           }
         })
       })
+      this.$message.success('合同创建成功')
     },
     async handleConfirm() {
       console.log(this.editForm.tableData)

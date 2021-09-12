@@ -82,10 +82,10 @@
 
         <el-form-item
           label="店铺名称:"
-          prop="token"
+          prop="seller"
           v-if="editForm.platform === 'eBay'"
         >
-          <el-input type="input" v-model="editForm.token"> </el-input
+          <el-input type="input" v-model="editForm.seller"> </el-input
         ></el-form-item>
         <div
           style="display: flex; justify-content: space-around"
@@ -217,13 +217,14 @@ export default {
       let url = ''
 
       if (this.dialogTitle === '添加店铺') {
-        url = 'seller/shop/addShop'
+        url = '/seller/shop/addShop'
       } else {
         url = `/seller/shop/${id}`
       }
       try {
         await Axios.fetchPost(url, params)
       } finally {
+        this.importdialogVisible = false
         this.$store.dispatch('noPage/init')
       }
     },

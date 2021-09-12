@@ -11,12 +11,16 @@
         <div class="warehoselist">
           <div
             class="warehoselist-item"
-            :class="warehouseactive == index ? 'active' : ''"
+            :class="
+              warehouseactive && warehouseactive.id == item.id ? 'active' : ''
+            "
             v-for="(item, index) in warehouselist"
             :key="index"
             @click="clickseller(item, index)"
           >
-            <p><span>仓</span>{{ item.seller }}{{ index + 1 }}</p>
+            <p>
+              <span>仓</span><b style="font-size: 12px">{{ item.seller }}</b>
+            </p>
             <i
               class="el-icon-delete"
               title="删除仓库"
@@ -36,12 +40,15 @@
       </div>
     </div>
     <div class="aside" v-if="type == 2">
+      <div class="aside-item3" @click="type = 1" style="margin-left: -17px">
+        返回上级
+      </div>
       <div
         class="aside-item1"
         :class="menuactive == '/storagedashboard' ? 'isactive' : ''"
         @click="cliclmenu('/storagedashboard')"
       >
-        XXXX仓库1
+        {{ warehouseactive.seller }}
       </div>
       <!--TODO-->
       <div
@@ -132,7 +139,9 @@
           <div class="cangkulistitem" @click="cliclmenu('/returningstock')">
             退货入库
           </div>
-          <div class="cangkulistitem" @click="cliclmenu('/otherstockrecord')">其他入库记录</div>
+          <div class="cangkulistitem" @click="cliclmenu('/otherstockrecord')">
+            其他入库记录
+          </div>
         </div>
         <div
           class="aside-item3"
@@ -211,16 +220,31 @@
             </div>
             <div class="warehousebox-left-bottom">
               <div class="warehousebox-left-bottom-item">
-                <div class="contact" @click="openchartbox">
+                <el-button
+                  type="primary"
+                  icon="icon iconfont icon-zu17"
+                  @click="openchartbox"
+                  size="medium"
+                  >联系仓库</el-button
+                >
+                <!-- <div class="contact" @click="openchartbox">
                   <i class="icon iconfont icon-zu17"></i>
                   <p>联系仓库</p>
-                </div>
+                </div> -->
               </div>
               <div class="warehousebox-left-bottom-item">
-                <div class="goorder" @click="gotoorder">
+                <el-button
+                  type="warning"
+                  :disabled="warehouselist.length === 0 || !warehouseactive.id"
+                  icon="icon iconfont icon-dingdan"
+                  @click="gotoorder"
+                  size="medium"
+                  >进入仓库</el-button
+                >
+                <!-- <div class="goorder" @click="gotoorder">
                   <i class="icon iconfont icon-dingdan"></i>
                   <p>进入仓库</p>
-                </div>
+                </div> -->
               </div>
             </div>
           </div>
@@ -282,7 +306,10 @@
             </div>
           </div>
         </div>
-        <router-view v-if="type == 2"></router-view>
+        <router-view
+          v-if="type == 2"
+          :warehouseactive="warehouseactive"
+        ></router-view>
       </div>
     </el-main>
     <div class="chartbox animated fadeInUp" v-if="showchartbox && type == 1">
@@ -368,9 +395,7 @@
         <el-button @click="adddialogVisible = false" type="info"
           >取 消</el-button
         >
-        <el-button type="primary" @click="adddialogVisible = false"
-          >确 认</el-button
-        >
+        <el-button type="primary" @click="addRelation">确 认</el-button>
       </span>
     </el-dialog>
   </div>
@@ -378,27 +403,15 @@
 
 <script>
 import $ from 'jquery'
+import Axios from '@/https/axios'
 export default {
   components: {},
   data() {
     return {
       menuactive: '/storagedashboard',
       type: 1,
-      warehouselist: [
-        {
-          seller: '仓库xxxxxxx'
-        },
-        {
-          seller: '仓库xxxxxxx'
-        },
-        {
-          seller: '仓库xxxxxxx'
-        },
-        {
-          seller: '仓库xxxxxxx'
-        }
-      ],
-      warehouseactive: 0,
+      warehouselist: [],
+      warehouseactive: {},
       list: [
         {
           imgurl: '',
@@ -458,14 +471,53 @@ export default {
       Invitationcode: null
     }
   },
+  async created() {
+    await this.fetchshoplist()
+    this.warehouseactive = this.warehouselist[0]
+  },
   methods: {
+    async fetchshoplist() {
+      const shoplist = await Axios.fetchGet('/seller/listPository')
+      this.warehouselist = shoplist.data.records.map((x) => ({
+        seller: x.name,
+        id: x.id
+      }))
+    },
     cliclmenu(path) {
       this.menuactive = path
       this.$router.push(path)
     },
-    handlEdeleteSeller(item, index) {},
+    handlEdeleteSeller(item, index) {
+      this.$confirm('此操作将删除改仓库, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        // seller/delRelation
+        // 解约
+        try {
+          await Axios.fetchPost('/seller/delRelation', {
+            id: item.id
+          })
+        } finally {
+          this.fetchshoplist()
+          this.adddialogVisible = false
+        }
+      })
+    },
     clickseller(item, index) {
-      this.warehouseactive = index
+      this.warehouseactive = item
+    },
+    async addRelation() {
+      try {
+        await Axios.fetchPost('/seller/addRelation', {
+          id: this.Invitationcode
+        })
+      } finally {
+        this.fetchshoplist()
+        this.Invitationcode = ''
+        this.adddialogVisible = false
+      }
     },
     handleCurrentChange(val) {},
     gettime() {
@@ -533,6 +585,7 @@ export default {
       }, 1000)
     },
     gotoorder() {
+      // TODO:跟进计入逻辑
       this.type = 2
     },
     backwarehouse() {

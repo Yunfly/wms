@@ -16,7 +16,7 @@ const axios = Axios.create() // 创建axios实例
 axios.defaults.baseURL = ''
 axios.defaults.timeout = 3000
 // 返回其他状态吗
-axios.defaults.validateStatus = function (status) {
+axios.defaults.validateStatus = function(status) {
   return status >= 200 && status <= 500 // 默认的
 }
 // 跨域请求，允许保存cookie
@@ -109,6 +109,43 @@ export function fetchPost(url, params) {
       })
   })
 }
+
+// 返回一个Promise(发送post请求)
+export function fetchPut(url, params) {
+  return new Promise((resolve, reject) => {
+    axios.put(url, params)
+      .then(
+        response => {
+          resolve(response)
+        },
+        err => {
+          reject(err)
+        }
+      )
+      .catch(error => {
+        reject(error)
+      })
+  })
+}
+
+// 返回一个Promise(发送post请求)
+export function fetchDelete(url, params) {
+  return new Promise((resolve, reject) => {
+    axios.delete(url, params)
+      .then(
+        response => {
+          resolve(response)
+        },
+        err => {
+          reject(err)
+        }
+      )
+      .catch(error => {
+        reject(error)
+      })
+  })
+}
+
 // 返回一个Promise(发送get请求)
 export function fetchGet(url, param) {
   return new Promise((resolve, reject) => {
@@ -319,6 +356,8 @@ function getLang() {
 export default {
   axios,
   fetchPost,
+  fetchDelete,
+  fetchPut,
   fetchPostQuery,
   fetchGet,
   fetchGetRoute,

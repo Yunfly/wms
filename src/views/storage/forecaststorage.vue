@@ -1,5 +1,5 @@
 // TODO: 添加包裹时对每个商品增加服务， /api/seller/getContractByModel 查看仓库某模块增值服务条款 services对应每一条服务id
-外层和包裹里面均有备注
+// 外层和包裹里面均有备注
 
 <template>
   <div class="forecaststorage-container">
@@ -20,20 +20,28 @@
         <el-form-item label="接受仓库:" prop="warsehouse" style="width: 40%">
           <CrudSelect
             :dic="listPository"
+            @input="handleWarsehouseChange"
             v-model="storageFrom.warsehouse"
-            label=""
           ></CrudSelect>
         </el-form-item>
-        <el-form-item label="物流信息:" prop="logistics" style="width: 40%">
+        <el-form-item label="物流信息:" prop="logistic" style="width: 40%">
           <CrudSelect
             :dic="cangkus"
-            v-model="storageFrom.logistics"
+            v-model="storageFrom.logistic"
             label="运送物流或手动填写"
           ></CrudSelect>
         </el-form-item>
-        <el-form-item label="物流单号:" prop="shipmentNo" style="width: 40%">
+        <el-form-item label="物流单号:" prop="lognumber" style="width: 40%">
           <el-input
-            v-model="storageFrom.shipmentNo"
+            v-model="storageFrom.lognumber"
+            placeholder="请填写物流单号"
+          ></el-input>
+        </el-form-item>
+
+        <el-form-item label="备注:" prop="desc" style="width: 40%">
+          <el-input
+            type="textarea"
+            v-model="storageFrom.desc"
             placeholder="请填写物流单号"
           ></el-input>
         </el-form-item>
@@ -64,15 +72,15 @@
           >
         </div>
         <el-table
-          :data="storageFrom.packages"
+          :data="storageFrom.packs"
           border
           show-summary
           class="product-table"
         >
-          <el-table-column label="参考码" width="300px">
+          <el-table-column label="序号" width="300px">
             <template slot-scope="scope">
               <div>
-                <span>{{ ifempty(scope.row.code) }}</span>
+                <span>{{ ifempty(scope.$index) }}</span>
               </div>
             </template>
           </el-table-column>
@@ -86,7 +94,15 @@
           <el-table-column label="包裹信息" width="275px">
             <template slot-scope="scope">
               <div>
-                <p>单个包裹尺寸：{{ ifempty(scope.row.size) }}</p>
+                <p>
+                  单个包裹尺寸：
+                  <br />
+                  长：{{ scope.row.length }}/{{ scope.row.size_unit }}
+                  <br />
+                  宽：{{ scope.row.width }}/{{ scope.row.size_unit }}
+                  <br />
+                  高：{{ scope.row.width }}/{{ scope.row.size_unit }}
+                </p>
                 <p>增值服务：{{ ifempty(scope.row.serve) }}</p>
                 <p>包裹处理费：{{ ifempty(scope.row.deal) }}</p>
               </div>
@@ -123,7 +139,7 @@
     <el-dialog
       title="单个包裹信息"
       :visible.sync="dialogVisible"
-      width="1000px"
+      width="1200px"
       :before-close="handleClose"
     >
       <div class="packagebox">
@@ -146,7 +162,7 @@
             ref="packageForm"
             :inline="true"
           >
-            <el-table :data="packageForm.list" border class="product-table">
+            <el-table :data="packageForm.goods" border class="product-table">
               <el-table-column prop="name" label="物品名" width="150px">
                 <template slot-scope="scope">
                   <el-form-item
@@ -206,7 +222,8 @@
                       { required: true, message: '请输入数量', trigger: 'blur' }
                     ]"
                   >
-                    {{ scope.row['unit-weight'] }}
+                    {{ scope.row['unit-weight'] }} /
+                    {{ scope.row['weight_unit'] }}
                   </el-form-item>
                 </template>
               </el-table-column>
@@ -216,7 +233,8 @@
                 width="100px"
               >
                 <template slot-scope="scope">
-                  {{ scope.row['unit-weight'] * scope.row['count'] || '' }}
+                  {{ scope.row['unit-weight'] * scope.row['count'] || '' }} /
+                  {{ scope.row['weight_unit'] }}
                 </template>
               </el-table-column>
               <el-table-column
@@ -247,10 +265,43 @@
                   </el-form-item>
                 </template>
               </el-table-column>
-              <el-table-column prop="describe" label="备注">
+              <el-table-column prop="services" label="增值服务" width="350px">
                 <template slot-scope="scope">
                   <el-form-item
-                    :prop="'list.' + scope.$index + '.describe'"
+                    :prop="'list.' + scope.$index + '.services'"
+                    :rules="[
+                      {
+                        required: true,
+                        message: '请选择增值服务',
+                        trigger: 'blur'
+                      }
+                    ]"
+                  >
+                    <el-cascader
+                      :options="servicesModelCascader"
+                      :props="{ multiple: true }"
+                      v-model="scope.row.services"
+                      clearable
+                    ></el-cascader>
+                    <!-- <el-select
+                      @change="(value) => productSelect(value, scope.$index)"
+                      placeholder
+                      v-model="scope.row.name"
+                    >
+                      <el-option
+                        v-for="(item, index) in this.servicesModel.others"
+                        :key="index"
+                        :label="item.name"
+                        :value="item.value"
+                      ></el-option>
+                    </el-select> -->
+                  </el-form-item>
+                </template>
+              </el-table-column>
+              <el-table-column prop="desc" label="备注">
+                <template slot-scope="scope">
+                  <el-form-item
+                    :prop="'list.' + scope.$index + '.desc'"
                     :rules="[
                       {
                         required: true,
@@ -261,7 +312,7 @@
                   >
                     <el-input
                       type="textarea"
-                      v-model="scope.row.describe"
+                      v-model="scope.row.desc"
                       style="width: 100%"
                     ></el-input>
                   </el-form-item>
@@ -291,7 +342,7 @@
           >
             <el-form-item label="预计包裹数目:" prop="count" style="width: 48%">
               <el-input
-                v-model="packageForm.count"
+                v-model.number="packageForm.count"
                 placeholder="请输入名称"
               ></el-input>
             </el-form-item>
@@ -308,8 +359,9 @@
             <p
               style="
                 font-size: 14px;
-                font-family: Microsoft YaHei;
-                font-weight: bold;
+                font-weight: 400;
+                color: #333333;
+                margin-bottom: 10px;
                 color: #000;
                 line-height: 30px;
               "
@@ -323,60 +375,57 @@
                 align-items: center;
               "
             >
-              <el-form-item
-                label="长:"
-                prop="pl"
-                style="width: 24%; display: flex"
-              >
-                <el-input v-model="packageForm.pl" placeholder="请输入长">
+              <el-form-item label="长:" prop="length">
+                <el-input v-model="packageForm.length" placeholder="请输入长">
                   <el-select
-                    v-model="packageForm.plunit"
+                    v-model="packageForm.size_unit"
                     slot="append"
                     placeholder=""
                     size="mini"
                   >
-                    <el-option label="cm" value="1"></el-option>
-                    <el-option label="inch" value="2"></el-option>
+                    <el-option label="cm" value="cm"></el-option>
+                    <el-option label="inch" value="inch"></el-option>
                   </el-select>
                 </el-input>
               </el-form-item>
-              <el-form-item
-                label="宽:"
-                prop="pw"
-                style="width: 24%; display: flex"
-              >
-                <el-input v-model="packageForm.pw" placeholder="请输入宽">
+              <el-form-item label="宽:" prop="width">
+                <el-input v-model="packageForm.width" placeholder="请输入宽">
                   <el-select
-                    v-model="packageForm.pwunit"
+                    v-model="packageForm.size_unit"
                     slot="append"
                     placeholder=""
                   >
-                    <el-option label="cm" value="1"></el-option>
-                    <el-option label="inch" value="2"></el-option>
+                    <el-option label="cm" value="cm"></el-option>
+                    <el-option label="inch" value="inch"></el-option>
                   </el-select>
                 </el-input>
               </el-form-item>
-              <el-form-item
-                label="高:"
-                prop="ph"
-                style="width: 24%; display: flex"
-              >
-                <el-input v-model="packageForm.ph" placeholder="请输入高">
+              <el-form-item label="高:" prop="height">
+                <el-input v-model="packageForm.height" placeholder="请输入高">
                   <el-select
-                    v-model="packageForm.phunit"
+                    v-model="packageForm.size_unit"
                     slot="append"
                     placeholder=""
                   >
-                    <el-option label="cm" value="1"></el-option>
-                    <el-option label="inch" value="2"></el-option>
+                    <el-option label="cm" value="cm"></el-option>
+                    <el-option label="inch" value="inch"></el-option>
                   </el-select>
                 </el-input>
               </el-form-item>
+              <div>
+                <el-form-item label="备注:" prop="desc" style="width: 100%">
+                  <el-input
+                    type="textarea"
+                    v-model="storageFrom.desc"
+                    placeholder="请填写物流单号"
+                  ></el-input>
+                </el-form-item>
+              </div>
             </div>
           </el-form>
         </div>
-        <div class="line"></div>
-        <div class="packagebox-title">
+        <!-- <div class="line"></div> -->
+        <!-- <div class="packagebox-title">
           <p>增值费用<span>(费率请在仓库设置中更改)</span></p>
         </div>
         <div>
@@ -389,9 +438,9 @@
             :inline="true"
           >
             <div>服务：</div>
-            <el-form-item label="服务:" prop="serve">
-              <!-- GET /api/seller/getContractByModel 查看仓库某模块增值服务条款 -->
-              <el-radio-group v-model="packageForm.serve">
+            <el-form-item label="服务:" prop="serve"> -->
+        <!-- GET /api/seller/getContractByModel 查看仓库某模块增值服务条款 -->
+        <!-- <el-radio-group v-model="packageForm.serve">
                 <el-radio :label="1">$2/个普通产品检测</el-radio>
                 <el-radio :label="2">$2/个电子产品检测</el-radio>
                 <el-radio :label="3">$2/个产品测量</el-radio>
@@ -399,13 +448,21 @@
               </el-radio-group>
             </el-form-item>
           </el-form>
-        </div>
+        </div> -->
       </div>
       <span slot="footer" class="dialog-footer">
-        <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="addpackage1">添加包裹</el-button>
+        <el-button size="small" @click="dialogVisible = false">取 消</el-button>
+        <el-button size="small" type="primary" @click="addpackage1"
+          >添加包裹</el-button
+        >
       </span>
     </el-dialog>
+    <br />
+    <div style="padding-left: 35px">
+      <el-button size="small" type="primary" @click="handleForecast"
+        >预报</el-button
+      >
+    </div>
 
     <!-- TODO: 整体增加提交接口:  /api/seller/firstpass/forecast 预报 -->
   </div>
@@ -414,6 +471,15 @@
 <script>
 import CrudSelect from '../../components/avue/crud-select.vue'
 import Axios from '@/https/axios'
+const initPacks = {
+  count: null,
+  weight: null,
+  length: null,
+  size_unit: 'cm',
+  width: null,
+  height: null,
+  goods: []
+}
 export default {
   components: {
     CrudSelect
@@ -421,41 +487,31 @@ export default {
   created() {
     this.init()
   },
+  props: ['warehouseactive'],
   data() {
     return {
       storageFrom: {
         warsehouse: '',
-        logistics: '',
-        shipmentNo: '',
-        packages: [
-          {
-            code: 'BHKFDSDSKFFHD',
-            count: 300,
-            size: '8KU001*100',
-            serve: '商品贴标$0.2/个',
-            deal: '$2/包裹',
-            price: 100,
-            barcode: ''
-          }
+        logistic: '',
+        lognumber: '',
+        packs: [
+          // {
+          //   code: 'BHKFDSDSKFFHD',
+          //   count: 300,
+          //   size: '8KU001*100',
+          //   serve: '商品贴标$0.2/个',
+          //   deal: '$2/包裹',
+          //   price: 100,
+          //   barcode: ''
+          // }
         ]
       },
-      packageForm: {
-        count: null,
-        weight: null,
-        pl: null,
-        plunit: 'cm',
-        pw: null,
-        pwunit: 'cm',
-        ph: null,
-        phunit: 'cm',
-        list: [],
-        serve: null
-      },
+      packageForm: JSON.parse(JSON.stringify(initPacks)),
       storageRules: {
         warsehouse: [
           { required: true, message: '请选择仓库', trigger: 'blur' }
         ],
-        logistics: [{ required: true, message: '请选择物流', trigger: 'blur' }]
+        logistic: [{ required: true, message: '请选择物流', trigger: 'blur' }]
       },
       packageRules: {},
       cangkus: [
@@ -475,58 +531,88 @@ export default {
       ],
       listPository: [],
       dialogVisible: false,
-      products: [
-        {
-          value: '选项1',
-          label: '黄金糕'
-        },
-        {
-          value: '选项2',
-          label: '双皮奶'
-        },
-        {
-          value: '选项3',
-          label: '蚵仔煎'
-        },
-        {
-          value: '选项4',
-          label: '龙须面'
-        },
-        {
-          value: '选项5',
-          label: '北京烤鸭'
-        }
-      ]
+      products: [],
+      servicesModel: {}
+    }
+  },
+  computed: {
+    servicesModelCascader() {
+      try {
+        return this.servicesModel.others.map((x) => {
+          return {
+            value: x.id,
+            label: x.name,
+            children: x.details.map((c) => ({
+              value: c.id,
+              label: `$${c.unitprice}/${c.title}`
+            }))
+          }
+        })
+      } catch (err) {
+        return []
+      }
     }
   },
   methods: {
     async init() {
       const res = await Axios.fetchGet('/seller/listPository')
-      console.log(res)
-      // seller/listPository
       this.listPository = res.data.records.map((x) => ({
         label: x.name,
         value: x.id
       }))
 
-      const productsRes = await Axios.fetchGet('/iteminfo/get')
+      const productsRes = await Axios.fetchGet('/iteminfo/search?sku=&name=')
       this.products = productsRes.data.content.map((x) => ({
         label: x.name,
-        value: x.uuid,
-        weight: x.weight
+        value: x.openid,
+        sku: x.sku,
+        weight: x.weight,
+        weight_unit: x.weight_unit
       }))
     },
     productSelect(uid, index) {
       // console.log(value)
       const weight = this.products.find((x) => x.value === uid)
-      this.packageForm.list[index]['unit-weight'] = weight.weight
+      console.log({ weight })
+      // this.packageForm.goods[index]['unit-weight'] = weight.weight
+      this.packageForm.goods[index].sku = weight.sku
+      this.packageForm.goods[index].id = weight.value
+      this.packageForm.goods[index].barcode = weight.value
+
       // 1ad11e3e-9137-4f88-ad17-21db9c751b3d
     },
     ifempty(value) {
       return value || '--'
     },
+    async handleWarsehouseChange(val) {
+      console.log(val)
+      const res = await Axios.fetchGet(`/seller/getContract?id=${val}`)
+      this.servicesModel = res.data
+    },
     handleRemove(file, fileList) {
       console.log(file, fileList)
+    },
+    async handleForecast() {
+      // const { packs, ...res } = this.storageFrom
+      console.log(this.storageFrom)
+      // await Axios.fetchPut('/seller/firstpass/forecast', {
+      //   id: this.warehouseactive.id,
+      //   ...res,
+      //   packs: packs.map(({ goods, ...x }) => {
+      //     // const {...res,services} = goods
+      //     return {
+      //       ...x,
+      //       goods: goods.map((c) => {
+      //         return {
+      //           ...c,
+      //           services:
+      //             c && c.services ? c.services.map((a) => a.slice(-1)[0]) : []
+      //         }
+      //       })
+      //     }
+      //   })
+      // })
+      // this.$message.success('预报入库成功！')
     },
     handlePreview(file) {
       console.log(file)
@@ -542,16 +628,19 @@ export default {
       return this.$confirm(`确定移除 ${file.name}？`)
     },
     addproduct() {
+      if (!this.storageFrom.warsehouse) {
+        return this.$message.warning('请先选择接受仓库')
+      }
       this.dialogVisible = true
     },
     deleteRow(index) {
-      this.storageFrom.packages.splice(index, 1)
+      this.storageFrom.packs.splice(index, 1)
     },
     handleClose(done) {
       done()
     },
     addpackage() {
-      this.packageForm.list.push({
+      this.packageForm.goods.push({
         name: '',
         count: 0,
         weight: 0,
@@ -560,9 +649,12 @@ export default {
       })
     },
     deleteRow1(index) {
-      this.packageForm.list.splice(index, 1)
+      this.packageForm.goods.splice(index, 1)
     },
     addpackage1() {
+      this.storageFrom.packs.push(this.packageForm)
+      console.log(this.packageForm)
+      this.packageForm = JSON.parse(JSON.stringify(initPacks))
       this.dialogVisible = false
     }
   }
@@ -623,7 +715,7 @@ p {
           .el-input__inner {
             padding: 0 0px 0 10px;
           }
-          .el-input-group__append {
+          /deep/.el-input-group__append {
             .el-select {
               .el-input {
                 .el-input__inner {
@@ -741,5 +833,8 @@ p {
       }
     }
   }
+}
+/deep/.el-input-group__append {
+  width: 35px;
 }
 </style>

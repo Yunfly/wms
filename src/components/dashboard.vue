@@ -255,7 +255,7 @@ export default {
   padding: 0px;
   // background: #ffffff;
   border-radius: 0px;
-  overflow: hidden;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   height: 100%;

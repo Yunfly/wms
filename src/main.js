@@ -15,6 +15,8 @@ import CollapseTransition from 'element-ui/lib/transitions/collapse-transition' 
 import store from './store'
 import ElementUI from 'element-ui'
 import VueClipboard from 'vue-clipboard2'
+import axios from 'axios'
+import VueAxios from 'vue-axios'
 
 Vue.prototype.$handleResError = function(res) {
   if (!res) this.$message.error('Connection Failed...')
@@ -32,6 +34,7 @@ Vue.component(CollapseTransition.name, CollapseTransition)
 
 Vue.use(Meta)
 Vue.use(VueClipboard)
+Vue.use(VueAxios, axios)
 
 export function bootstrop(_rooter) {
   new Vue({

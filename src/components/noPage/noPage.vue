@@ -40,8 +40,10 @@
         :data="dataSource"
         size="small"
         border
+        :height="tableHeight"
         v-loading="listLoading"
         element-loading-text="加载中..."
+        @selection-change="handleSelectionChange"
         fit
         highlight-current-row
       >
@@ -64,7 +66,7 @@
               type="primary"
               size="medium"
               style="margin-left: 7px"
-              @click="$emit('handleBitchDispatch', value)"
+              @click="$emit('handleBitchDispatch', value, multipleSelection)"
             >
               批量执行
             </el-button>
@@ -73,7 +75,7 @@
 
         <el-pagination
           @current-change="handleCurrentChange"
-          :current-page.sync="pagination.number"
+          :current-page.sync="pagination.current"
           :page-size="pagination.size"
           layout="total, prev, pager, next, jumper"
           :total="pageTotal"
@@ -96,6 +98,7 @@ export default {
   },
   data() {
     return {
+      multipleSelection: [],
       value: this.options ? this.options.find((x) => x.isDefault).value : []
     }
   },
@@ -108,7 +111,7 @@ export default {
       pageTotal: (state) => state.pageTotal
     })
   },
-  props: ['searchForm', 'options', 'data'],
+  props: ['searchForm', 'options', 'data', 'tableHeight'],
   watch: {
     value(val) {
       console.log(val)
@@ -121,11 +124,16 @@ export default {
     ifempty(value) {
       return value || '--'
     },
+    handleSelectionChange(val) {
+      this.multipleSelection = val
+    },
     handleFilter() {
       this.$emit('handleFilter', this.searchForm)
     },
     searchReset() {
+      console.log(this.$refs.searchForm)
       this.$refs.searchForm.resetFields()
+      this.$store.dispatch('noPage/init')
     },
     handleCurrentChange(current) {
       // this.updateStates({ pagination: { ...this.pagination, current } })

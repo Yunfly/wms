@@ -69,14 +69,13 @@
         element-loading-text="加载中..."
         fit
         highlight-current-row
-        v-if="tagkey == 1"
       >
         <el-table-column type="selection" width="55"> </el-table-column>
-        <el-table-column label="序号" width="175">
+        <el-table-column label="序号" width="75">
           <template slot-scope="scope">
             <div>
               <img src="" alt="" />
-              <span>{{ ifempty(scope.row.rid) }}</span>
+              <span>{{ scope.$index + 1 }}</span>
             </div>
           </template>
         </el-table-column>
@@ -84,8 +83,8 @@
           <template slot-scope="scope">
             <div>
               <img src="" alt="" />
-              <span>{{ ifempty(scope.row.selsku) }}</span>
-              <el-popover
+              <span>{{ ifempty(scope.row.sku) }}</span>
+              <!-- <el-popover
                 placement="right-start"
                 title=""
                 trigger="hover"
@@ -94,16 +93,27 @@
                 <div class="countdiv">
                   <div
                     class="countitem"
-                    v-for="(n, index) in scope.row.counts"
+                    v-for="(n, index) in scope.row.shopInfos"
                     :key="index"
                   >
-                    <p>{{ n.warehousename }}：</p>
-                    <p>{{ n.warehousecount }}</p>
+                    <p>{{ n.shop_id }}：</p>
+                    <p>{{ n.shop_sku }}</p>
                   </div>
                 </div>
                 <i class="el-icon-question" slot="reference"></i>
-              </el-popover>
+              </el-popover> -->
             </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="店铺SKU">
+          <template slot-scope="scope">
+            <span>{{
+              ifempty(
+                get(scope, 'row.shopInfos', [])
+                  .map((x) => x.shop_sku)
+                  .join(',')
+              )
+            }}</span>
           </template>
         </el-table-column>
         <el-table-column label="名称">
@@ -118,12 +128,18 @@
         </el-table-column>
         <el-table-column label="重量" width="100">
           <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.weight) }}</span>
+            <span>{{ ifempty(scope.row.weight) }}{{scope.row.weight&&scope.row.weight_unit}}</span>
           </template>
         </el-table-column>
-        <el-table-column label="尺寸">
+        <el-table-column label="尺寸 (长宽高/单位)">
           <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.size) }}</span>
+            <span
+              >{{ ifempty(scope.row.width) }}、{{
+                ifempty(scope.row.length)
+              }}、{{ ifempty(scope.row.height) }} ({{
+                ifempty(scope.row.weight_unit)
+              }})</span
+            >
           </template>
         </el-table-column>
         <el-table-column label="操作" fixed="right" width="150">
@@ -140,111 +156,9 @@
                 title="删除"
                 type="danger"
                 size="mini"
-                @click="handleCancleRequest(scope.row)"
+                @click="handleDeleteClick(scope.row)"
               >
                 删除
-              </el-button>
-            </template>
-          </template>
-        </el-table-column>
-      </el-table>
-      <el-table
-        key="0"
-        :data="list"
-        border
-        v-loading="listLoading"
-        element-loading-text="加载中..."
-        fit
-        highlight-current-row
-        v-if="tagkey == 2"
-      >
-        <el-table-column type="selection" width="55"> </el-table-column>
-        <el-table-column label="序号" width="175">
-          <template slot-scope="scope">
-            <div>
-              <img src="" alt="" />
-              <span>{{ ifempty(scope.row.rid) }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="仓库SKU" width="100">
-          <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.stksku) }}</span>
-            <el-popover
-              placement="right-start"
-              title=""
-              trigger="hover"
-              :visible-arrow="false"
-            >
-              <div class="countdiv">
-                <div
-                  class="countitem"
-                  v-for="(n, index) in scope.row.counts"
-                  :key="index"
-                >
-                  <p>{{ n.warehousename }}：</p>
-                  <p>{{ n.warehousecount }}</p>
-                </div>
-              </div>
-              <i class="el-icon-question" slot="reference"></i>
-            </el-popover>
-          </template>
-        </el-table-column>
-        <el-table-column label="卖家SKU">
-          <template slot-scope="scope">
-            <div>
-              <img src="" alt="" />
-              <span>{{ ifempty(scope.row.selsku) }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="名称">
-          <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.name) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="单位" width="100">
-          <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.unit) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="重量" width="100">
-          <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.weight) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="尺寸">
-          <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.size) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" fixed="right" width="200">
-          <template slot-scope="scope">
-            <el-button
-              title="编辑"
-              type="success"
-              size="mini"
-              @click="handleEdit(scope.row)"
-              >编辑
-            </el-button>
-            <template v-if="scope.row.ptype === 1">
-              <el-button
-                title="删除"
-                type="danger"
-                size="mini"
-                @click="handleCancleRequest(scope.row)"
-              >
-                取消提交审核
-              </el-button>
-            </template>
-            <template v-else>
-              <el-button
-                title="删除"
-                type="warning"
-                size="mini"
-                @click="handleSubmitRequest(scope.row)"
-              >
-                审核仓库修改
               </el-button>
             </template>
           </template>
@@ -293,154 +207,201 @@
         class="product-form"
         label-width="100px"
         :rules="productRules"
+        size="small"
         ref="productForm"
         :inline="true"
       >
+        <el-row type="flex" align="middle" justify="center" class="row-bg">
+          <el-col :span="12" style="text-align: center">
+            <el-form-item prop="imageUrl" style="margin-top: 20px">
+              <el-upload
+                class="avatar-uploader"
+                action="/api/file/upload"
+                :headers="{
+                  Authorization,
+                  Authorizaasd: 123
+                }"
+                :show-file-list="false"
+                :on-success="handleAvatarSuccess"
+                :before-upload="beforeAvatarUpload"
+              >
+                <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+              </el-upload>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <p
+              style="
+                font-family: Microsoft YaHei;
+                font-weight: bold;
+                color: rgb(0, 0, 0);
+                line-height: 50px;
+                text-align: left;
+                font-size: 16px;
+              "
+            >
+              基本信息
+            </p>
+            <!-- todo: 新增名称和商品sku -->
+            <el-form-item label="商品sku:" prop="sku">
+              <el-input
+                style="width: 198px"
+                v-model="productForm.sku"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="名称:" prop="name">
+              <el-input
+                style="width: 198px"
+                v-model="productForm.name"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="单位:" prop="unit">
+              <el-input
+                style="width: 198px"
+                v-model="productForm.unit"
+              ></el-input>
+            </el-form-item>
+            <el-form-item label="长:" prop="length">
+              <el-input
+                type="number"
+                v-model="productForm.length"
+                placeholder="请输入长"
+              >
+                <el-select
+                  v-model="productForm.size_unit"
+                  slot="append"
+                  placeholder=""
+                  size="mini"
+                >
+                  <el-option label="cm" value="1"></el-option>
+                  <el-option label="inch" value="2"></el-option>
+                </el-select>
+              </el-input>
+            </el-form-item>
+            <el-form-item label="宽:" prop="width">
+              <el-input
+                type="number"
+                v-model="productForm.width"
+                placeholder="请输入宽"
+              >
+                <el-select
+                  v-model="productForm.size_unit"
+                  slot="append"
+                  placeholder=""
+                >
+                  <el-option label="cm" value="1"></el-option>
+                  <el-option label="inch" value="2"></el-option>
+                </el-select>
+              </el-input>
+            </el-form-item>
+            <el-form-item label="高:" prop="height">
+              <el-input
+                type="number"
+                v-model="productForm.height"
+                placeholder="请输入高"
+              >
+                <el-select
+                  v-model="productForm.size_unit"
+                  slot="append"
+                  placeholder=""
+                >
+                  <el-option label="cm" value="1"></el-option>
+                  <el-option label="inch" value="2"></el-option>
+                </el-select>
+              </el-input>
+            </el-form-item>
+            <el-form-item label="重量:" prop="weight">
+              <el-input
+                type="number"
+                v-model="productForm.weight"
+                placeholder="请输入重量"
+              >
+                <el-select
+                  v-model="productForm.weight_unit"
+                  slot="append"
+                  placeholder=""
+                >
+                  <el-option label="lbs" value="1"></el-option>
+                  <el-option label="kg" value="2"></el-option> </el-select
+              ></el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
         <p
           style="
-            font-size: 14px;
+            font-size: 16px;
             font-family: Microsoft YaHei;
             font-weight: bold;
             color: #000;
             line-height: 50px;
           "
         >
-          预计单个包裹尺寸：
+          对应SKU:
         </p>
-        <el-form-item label="长:" prop="length">
-          <el-input
-            type="number"
-            v-model="productForm.length"
-            placeholder="请输入长"
-          >
-            <el-select
-              v-model="productForm.size_unit"
-              slot="append"
-              placeholder=""
-              size="mini"
-            >
-              <el-option label="cm" value="1"></el-option>
-              <el-option label="inch" value="2"></el-option>
-            </el-select>
-          </el-input>
-        </el-form-item>
-        <el-form-item label="宽:" prop="width">
-          <el-input
-            type="number"
-            v-model="productForm.width"
-            placeholder="请输入宽"
-          >
-            <el-select
-              v-model="productForm.size_unit"
-              slot="append"
-              placeholder=""
-            >
-              <el-option label="cm" value="1"></el-option>
-              <el-option label="inch" value="2"></el-option>
-            </el-select>
-          </el-input>
-        </el-form-item>
-        <el-form-item label="高:" prop="height">
-          <el-input
-            type="number"
-            v-model="productForm.height"
-            placeholder="请输入高"
-          >
-            <el-select
-              v-model="productForm.size_unit"
-              slot="append"
-              placeholder=""
-            >
-              <el-option label="cm" value="1"></el-option>
-              <el-option label="inch" value="2"></el-option>
-            </el-select>
-          </el-input>
-        </el-form-item>
-        <el-form-item label="重量:" prop="weight">
-          <el-input
-            type="number"
-            v-model="productForm.weight"
-            placeholder="请输入重量"
-          >
-            <el-select
-              v-model="productForm.weight_unit"
-              slot="append"
-              placeholder=""
-            >
-              <el-option label="lbs" value="1"></el-option>
-              <el-option label="kg" value="2"></el-option> </el-select
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="商品图片:" prop="imageUrl" style="width: 48%">
-          <el-upload
-            class="avatar-uploader"
-            action="#"
-            :show-file-list="false"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload"
-          >
-            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-          </el-upload>
-        </el-form-item>
-        <el-form-item label="备注:" prop="notes" style="width: 48%">
+        <el-row type="flex" class="shopSku" justify="space-between">
+          <el-col :span="11">
+            <el-form-item label="店铺名称:" prop="name">
+              <el-select
+                style="width: 314px; margin-bottom: 10px; height: 32px"
+                v-for="(item, index) in productForm.shopInfos"
+                :key="index"
+                v-model="item.shop_id"
+                placeholder="请选择店铺名称"
+              >
+                <el-option
+                  v-for="(item, index) in shoplist"
+                  :key="index"
+                  :label="item.label"
+                  :value="item.value"
+                >
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+
+          <el-col :span="11">
+            <el-form-item label="店铺SKU:" prop="sku">
+              <div>
+                <el-input
+                  style="width: 314px; margin-bottom: 10px"
+                  :placeholder="'SKU序号-' + (index + 1)"
+                  v-for="(item, index) in productForm.shopInfos"
+                  :key="index"
+                  v-model="item.shop_sku"
+                  class="input-with-select"
+                >
+                  <el-button
+                    @click="addSKURow"
+                    v-if="index == 0"
+                    slot="append"
+                    icon="el-icon-plus"
+                    circle
+                  ></el-button>
+                  <el-button
+                    @click="delSKURow(index)"
+                    v-if="index != 0"
+                    slot="append"
+                    icon="el-icon-minus"
+                    circle
+                  ></el-button>
+                </el-input>
+              </div>
+            </el-form-item>
+          </el-col>
+        </el-row>
+
+        <el-form-item label="备注:" label-width="50" prop="notes">
           <el-input
             type="textarea"
             maxlength="300"
+            style="width: 760px"
             rows="6"
             show-word-limit
             v-model="productForm.notes"
             placeholder="请填写备注相关信息"
           ></el-input>
-        </el-form-item>
-        <p
-          style="
-            font-size: 14px;
-            font-family: Microsoft YaHei;
-            font-weight: bold;
-            color: #000;
-            line-height: 50px;
-          "
-        >
-          商品信息：
-        </p>
-        <el-form-item label="商品名称:" prop="name" style="width: 48%">
-          <el-input v-model="productForm.name" placeholder="请输入商品名称">
-            <i slot="suffix" class="fa fa-barcode" aria-hidden="true"></i
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="单位:" prop="unit" style="width: 48%">
-          <el-input
-            v-model="productForm.unit"
-            placeholder="请输入单位"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="产品SKU:" prop="sku" style="width: 48%">
-          <div>
-            <el-input
-              :placeholder="'SKU序号-' + (index + 1)"
-              v-for="(item, index) in productForm.sku"
-              :key="index"
-              v-model="item.value"
-              class="input-with-select"
-              style="margin-bottom: 5px"
-            >
-              <el-button
-                @click="addSKURow"
-                v-if="index == 0"
-                slot="append"
-                icon="el-icon-plus"
-                circle
-              ></el-button>
-              <el-button
-                @click="delSKURow(index)"
-                v-if="index != 0"
-                slot="append"
-                icon="el-icon-minus"
-                circle
-              ></el-button>
-            </el-input>
-          </div>
         </el-form-item>
       </el-form>
 
@@ -475,27 +436,16 @@
             <p class="p14">
               文件后缀名必须为xls或xlsx（即Excel格式）,文件大小不得大于2M，超过2M的请分批导入
             </p>
-            <el-upload
-              class="upload-demo"
-              action="#"
-              :on-preview="handlePreview"
-              :on-remove="handleRemove"
-              :before-remove="beforeRemove"
-              :on-change="handleChange"
-              :limit="1"
-              :on-exceed="handleExceed"
-              :file-list="fileList"
-              accept=".xls,.csv,xlsx"
+            <upload-excel-component
+              :on-success="handleSuccess"
+              :before-upload="beforeUpload"
             >
-              <el-link ref="child" type="primary" @click="handleUpload"
-                >上传文件</el-link
-              >
-            </el-upload>
+              <el-link type="primary"> 上传文件</el-link>
+            </upload-excel-component>
           </div>
         </div>
         <div class="importdivitem1">
           <p class="pp"><i class="el-icon-info"></i>特别提示</p>
-          <el-link>上传文件</el-link>
           <p class="p14">1、客户单号为空，默认为系统自动生成单号</p>
           <p class="p14">
             2、请勿修改表格格式和重复导入Excel表格，否则无法导入
@@ -569,15 +519,23 @@
 <script>
 import { readExcel } from '../../util/readXlsxFile.js'
 import productService from '../../services/productService'
+import Axios from '@/https/axios'
+import UploadExcelComponent from '@/components/UploadExcel/index.vue'
+import { get } from 'loadsh'
 
 export default {
-  components: {},
+  components: { UploadExcelComponent },
   created() {
     this.getlist()
+    this.getShopList()
+  },
+  computed: {
+    Authorization() {
+      return window.localStorage.getItem('wms_auth_access_token')
+    }
   },
   data() {
     return {
-      tagkey: 1,
       searchForm: {
         sku: null,
         name: null
@@ -592,9 +550,9 @@ export default {
       total: 0,
       dialogVisible: false,
       title: '',
-      value: [],
+      value: 'opt2',
       productForm: {
-        sku: [{ value: '' }],
+        shopInfos: [{ value: '' }],
         unit: null,
         name: null,
         length: null,
@@ -615,6 +573,7 @@ export default {
       importdialogVisible: false,
       importstatu: 'uploading',
       fileList: [],
+      shoplist: [],
       options: [
         {
           value: 'opt1',
@@ -627,10 +586,58 @@ export default {
       ]
     }
   },
+  watch: {
+    value(val) {
+      console.log(val)
+    }
+  },
   methods: {
-    handleUpload() {
-      console.log(this.$refs)
-      this.$refs.child.handleUpload()
+    get,
+    beforeUpload(file) {
+      const isLt1M = file.size / 1024 / 1024 < 1
+
+      if (isLt1M) {
+        return true
+      }
+
+      this.$message({
+        message: '文件大于1M!',
+        type: 'warning'
+      })
+      return false
+    },
+    async handleSuccess({ results, header }) {
+      console.log({ results, header })
+      // this.tableHeader = header
+      await Axios.fetchPost(
+        '/iteminfo/addBatch',
+        results.map((x) => {
+          return {
+            height: x['高'],
+            length: x['长'],
+            name: x['商品名称'],
+            notes: x['备注'],
+            size_unit: x['尺寸单位'],
+            sku: x.SKU,
+            unit: x['商品单位'],
+            weight: x['重量'],
+            weight_unit: x['重量单位'],
+            width: x['宽']
+          }
+        })
+      )
+      await this.getlist()
+      this.importdialogVisible = false
+      this.$message.success('添加成功')
+    },
+    async getShopList() {
+      const res = await Axios.fetchGet('/seller/shop/listShop')
+      console.log(res)
+      this.shoplist = res.data.records.map((x) => ({
+        label: x.name,
+        value: x.id
+      }))
+      // this.options = res.records.map(x=>{})
     },
     ifempty(value) {
       return value || '--'
@@ -652,10 +659,7 @@ export default {
       })
     },
     updateList(data) {
-      return productService.updateItem({
-        ...data,
-        sku: data.sku.filter((i) => i.value !== '').map((x) => x.value)
-      })
+      return productService.updateItem(data)
     },
     deleteItem(data) {
       productService.deleteItem(data)
@@ -670,10 +674,12 @@ export default {
       }
     },
     addSKURow() {
-      this.productForm.sku.push({ value: '' })
+      console.log(this.productForm, this.productForm.shopInfos)
+      this.productForm.shopInfos = this.productForm.shopInfos || []
+      this.productForm.shopInfos.push({ value: '' })
     },
     delSKURow(index) {
-      this.productForm.sku.splice(index, 1)
+      this.productForm.shopInfos.splice(index, 1)
     },
     handleAdd() {
       this.title = '添加新商品'
@@ -693,9 +699,10 @@ export default {
             weight_unit,
             size_unit,
             weight,
-            notes
+            notes,
+            shopInfos
           } = this.productForm
-          console.log(this.productForm)
+
           await productService.addItem({
             name,
             unit,
@@ -703,15 +710,22 @@ export default {
             length,
             height,
             width,
+            sku,
             weight,
             weight_unit,
             size_unit,
             notes,
-            sku: sku.map((x) => x.value)
+            shopInfos
           })
           this.dialogVisible = false
           await this.getlist()
+          this.$message.success('添加成功')
+
           this.$refs.productForm.resetFields()
+          try {
+          } catch (err) {
+            this.$message.error(err.payload.message)
+          }
         } else {
           console.log('error submit!!')
           return false
@@ -734,22 +748,24 @@ export default {
     handleEdit(row) {
       console.log(row)
       this.productForm = row
-      if (!this.productForm.sku.length) {
+      if (!this.productForm.shopInfos) {
         this.addSKURow()
       } else {
-        this.productForm.sku = this.productForm.sku.map((value) => {
-          console.log(value)
-          return {
-            value: typeof value !== 'object' ? value : value.value
-          }
-        })
+        // this.productForm.shopInfos = this.productForm.shopInfos.map((value) => {
+        //   console.log(value)
+        //   return {
+        //     value: typeof value !== 'object' ? value : value.value
+        //   }
+        // })
       }
       this.title = '编辑产品'
       this.dialogVisible = true
     },
-    async handleCancleRequest(item) {
+    handleCancleRequest() {},
+    async handleDeleteClick(item) {
       await productService.deleteItem({ item: item.openid })
       console.log('Request cancled', item)
+      this.$message.success('删除成功')
     },
     handleSubmitRequest() {
       console.log('Request submitted')
@@ -775,18 +791,18 @@ export default {
       this.imageUrl = URL.createObjectURL(file.raw)
     },
     beforeAvatarUpload(file) {
-      const extension = file.name.split('.')[1] === 'xls'
-      const extension2 = file.name.split('.')[1] === 'xlsx'
+      // const extension = file.name.split('.')[1] === 'xls'
+      // const extension2 = file.name.split('.')[1] === 'xlsx'
 
       const isLt2M = file.size / 1024 / 1024 < 2
 
-      if (!extension && !extension2) {
-        this.$message.error('上传文件只能是 xls、xlsx格式!')
-      }
+      // if (!extension && !extension2) {
+      //   this.$message.error('上传文件只能是 xls、xlsx格式!')
+      // }
       if (!isLt2M) {
         this.$message.error('上传头像图片大小不能超过 2MB!')
       }
-      return !extension && !extension2 && isLt2M
+      return isLt2M
     },
     handleRemove(file, fileList) {
       console.log(file, fileList)
@@ -806,9 +822,6 @@ export default {
     },
     beforeRemove(file, fileList) {
       return this.$confirm(`确定移除 ${file.name}？`)
-    },
-    changtagkey(key) {
-      this.tagkey = key
     }
   }
 }
@@ -866,7 +879,12 @@ p {
       }
     }
   }
-  .twoheight1 {
+  .shopSku {
+    /deep/ .el-form-item__label {
+      text-align: left;
+    }
+  }
+  /deep/ .twoheight1 {
     width: 100%;
     height: 86%;
     background: #ffffff;
@@ -945,7 +963,7 @@ p {
   /deep/.el-form-item {
     margin-right: 0px;
     .el-form-item__content {
-      width: calc(100% - 100px);
+      // width: calc(100% - 100px);
       .avatar-uploader {
         // border: 1px dashed #d9d9d9;
         .el-upload {
@@ -1194,5 +1212,14 @@ p {
       }
     }
   }
+}
+
+.avatar-uploader .avatar-uploader-icon {
+  font-size: 28px;
+  color: #8c939d;
+  width: 340px;
+  height: 350px;
+  line-height: 350px;
+  text-align: center;
 }
 </style>

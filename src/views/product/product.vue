@@ -1,82 +1,72 @@
 <template>
-  <div class="product-container">
-    <div class="filter-container">
-      <el-form :inline="true" :model="searchForm" ref="searchForm">
+  <div>
+    <no-page
+      :searchForm="filters"
+      :options="options"
+      :tableHeight="600"
+      @handleFilter="handleFilter"
+      @handleCurrentChange="handleCurrentChange"
+      @handleBitchDispatch="handleBitchDispatch"
+    >
+      <template v-slot:filter>
         <el-form-item label="SKU:" prop="sku">
           <el-input
             class="filter-item input-normal"
-            v-model="searchForm.sku"
+            v-model="filters.sku"
             placeholder="请输入库存量单位"
           ></el-input>
         </el-form-item>
         <el-form-item label="商品名:" prop="name">
           <el-input
             class="filter-item input-normal"
-            v-model="searchForm.name"
+            v-model="filters.name"
             placeholder="请输入商品名"
           ></el-input>
         </el-form-item>
-        <el-form-item style="width: 300px">
+      </template>
+
+      <template v-slot:table-menu-left>
+        <el-button-group>
+          <el-button size="mini" class="filter-item" type="primary"
+            >全部
+          </el-button>
+          <el-button size="mini" class="filter-item" type="primary" plain
+            >待确认修改
+          </el-button>
+        </el-button-group>
+      </template>
+
+      <template v-slot:table-menu-right>
+        <el-button-group>
           <el-button
-            size="small"
-            @click="searchReset"
-            icon="icon iconfont icon-qingkong"
+            size="mini"
+            class="filter-item"
+            @click="handleAdd"
+            type="primary"
+            icon="icon iconfont icon-jia"
+            >添加
+          </el-button>
+          <el-button
+            size="mini"
+            class="filter-item"
+            @click="handleimport"
             type="primary"
             plain
-            >清空查询条件
+            icon="icon iconfont icon-jichutubiao-"
+            >导入
           </el-button>
-          <el-button
-            size="small"
-            type="primary"
-            icon="icon iconfont icon-chaxun"
-            @click="handleFilter"
-            >查询
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </div>
-    <!-- 表格功能列 -->
-    <div class="twoheight1">
-      <div class="table-menu">
-        <div class="table-menu-left"></div>
-        <div class="table-menu-right">
-          <el-button-group>
-            <el-button
-              size="mini"
-              class="filter-item"
-              @click="handleAdd"
-              type="primary"
-              icon="icon iconfont icon-jia"
-              >添加
-            </el-button>
-            <el-button
-              size="mini"
-              class="filter-item"
-              @click="handleimport"
-              type="primary"
-              plain
-              icon="icon iconfont icon-jichutubiao-"
-              >导入
-            </el-button>
-          </el-button-group>
-        </div>
-      </div>
-      <el-table
-        key="0"
-        :data="list"
-        border
-        v-loading="listLoading"
-        element-loading-text="加载中..."
-        fit
-        highlight-current-row
-        v-if="tagkey == 1"
-      >
+        </el-button-group>
+      </template>
+
+      <template v-slot:table>
         <el-table-column type="selection" width="55"> </el-table-column>
-        <el-table-column label="序号" width="175">
+        <el-table-column label="序号" width="75">
           <template slot-scope="scope">
             <div>
               <img src="" alt="" />
-              <span>{{ ifempty(scope.row.openid) }}</span>
+              <span>{{
+                (pagination.current - 1) * pagination.size + scope.$index + 1
+              }}</span>
             </div>
           </template>
         </el-table-column>
@@ -94,16 +84,27 @@
                 <div class="countdiv">
                   <div
                     class="countitem"
-                    v-for="(n, index) in scope.row.counts"
+                    v-for="(n, index) in scope.row.shopInfos"
                     :key="index"
                   >
-                    <p>{{ n.warehousename }}：</p>
-                    <p>{{ n.warehousecount }}</p>
+                    <p>{{ n.shop_id }}：</p>
+                    <p>{{ n.shop_sku }}</p>
                   </div>
                 </div>
                 <i class="el-icon-question" slot="reference"></i>
               </el-popover> -->
             </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="店铺SKU">
+          <template slot-scope="scope">
+            <span>{{
+              ifempty(
+                get(scope, 'row.shopInfos', [])
+                  .map((x) => x.shop_sku)
+                  .join(',')
+              )
+            }}</span>
           </template>
         </el-table-column>
         <el-table-column label="名称">
@@ -118,18 +119,32 @@
         </el-table-column>
         <el-table-column label="重量" width="100">
           <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.weight) }}</span>
+            <span
+              >{{ ifempty(scope.row.weight) }} /
+              {{ scope.row.weight && scope.row.weight_unit }}</span
+            >
           </template>
         </el-table-column>
-        <el-table-column label="尺寸 (长宽高/单位)">
+
+        <el-table-column label="尺寸">
           <template slot-scope="scope">
-            <span
-              >{{ ifempty(scope.row.width) }}、{{
-                ifempty(scope.row.length)
-              }}、{{ ifempty(scope.row.height) }} ({{
-                ifempty(scope.row.weight_unit)
-              }})</span
-            >
+            <p>
+              长： {{ ifempty(scope.row.length) }}
+              {{ ifempty(scope.row.size_unit) }}
+            </p>
+            <p>
+              宽： {{ ifempty(scope.row.width) }}
+              {{ ifempty(scope.row.size_unit) }}
+            </p>
+            <p>
+              高：{{ ifempty(scope.row.height) }}
+              {{ ifempty(scope.row.size_unit) }}
+            </p>
+          </template>
+        </el-table-column>
+        <el-table-column label="备注">
+          <template slot-scope="scope">
+            <span>{{ ifempty(scope.row.notes) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作" fixed="right" width="150">
@@ -146,153 +161,20 @@
                 title="删除"
                 type="danger"
                 size="mini"
-                @click="handleCancleRequest(scope.row)"
+                @click="handleDeleteClick(scope.row)"
               >
                 删除
               </el-button>
             </template>
           </template>
         </el-table-column>
-      </el-table>
-      <el-table
-        key="0"
-        :data="list"
-        border
-        v-loading="listLoading"
-        element-loading-text="加载中..."
-        fit
-        highlight-current-row
-        v-if="tagkey == 2"
-      >
-        <el-table-column type="selection" width="55"> </el-table-column>
-        <el-table-column label="序号" width="175">
-          <template slot-scope="scope">
-            <div>
-              <img src="" alt="" />
-              <span>{{ ifempty(scope.row.rid) }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="仓库SKU" width="100">
-          <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.stksku) }}</span>
-            <el-popover
-              placement="right-start"
-              title=""
-              trigger="hover"
-              :visible-arrow="false"
-            >
-              <div class="countdiv">
-                <div
-                  class="countitem"
-                  v-for="(n, index) in scope.row.counts"
-                  :key="index"
-                >
-                  <p>{{ n.warehousename }}：</p>
-                  <p>{{ n.warehousecount }}</p>
-                </div>
-              </div>
-              <i class="el-icon-question" slot="reference"></i>
-            </el-popover>
-          </template>
-        </el-table-column>
-        <el-table-column label="卖家SKU">
-          <template slot-scope="scope">
-            <div>
-              <img src="" alt="" />
-              <span>{{ ifempty(scope.row.selsku) }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="名称">
-          <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.name) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="单位" width="100">
-          <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.unit) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="重量" width="100">
-          <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.weight) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="尺寸">
-          <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.size) }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" fixed="right" width="200">
-          <template slot-scope="scope">
-            <el-button
-              title="编辑"
-              type="success"
-              size="mini"
-              @click="handleEdit(scope.row)"
-              >编辑
-            </el-button>
-            <template v-if="scope.row.ptype === 1">
-              <el-button
-                title="删除"
-                type="danger"
-                size="mini"
-                @click="handleCancleRequest(scope.row)"
-              >
-                取消提交审核
-              </el-button>
-            </template>
-            <template v-else>
-              <el-button
-                title="删除"
-                type="warning"
-                size="mini"
-                @click="handleSubmitRequest(scope.row)"
-              >
-                审核仓库修改
-              </el-button>
-            </template>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div v-show="!listLoading" class="tableactions-container">
-        <div>
-          <el-select v-model="value" placeholder="选择执行的操作">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            >
-            </el-option>
-          </el-select>
-          <el-button
-            title="批量执行"
-            type="primary"
-            size="medium"
-            style="margin-left: 7px"
-            @click="handleSubmitRequest(scope.row)"
-          >
-            批量执行
-          </el-button>
-        </div>
-        <el-pagination
-          @current-change="handleCurrentChange"
-          :current-page.sync="listQuery.current"
-          :page-size="listQuery.size"
-          layout="total, prev, pager, next, jumper"
-          :total="total"
-        >
-        </el-pagination>
-      </div>
-      <div></div>
-    </div>
+      </template>
+    </no-page>
     <el-dialog
       :title="title"
       :visible.sync="dialogVisible"
       width="800px"
-      :before-close="handleClose"
+      :before-close="handleEditDialogClose"
     >
       <el-form
         :model="productForm"
@@ -309,6 +191,9 @@
               <el-upload
                 class="avatar-uploader"
                 action="/api/file/upload"
+                :headers="{
+                  Authorization
+                }"
                 :show-file-list="false"
                 :on-success="handleAvatarSuccess"
                 :before-upload="beforeAvatarUpload"
@@ -332,26 +217,31 @@
               基本信息
             </p>
             <!-- todo: 新增名称和商品sku -->
-            <el-form-item label="商品sku:" prop="name">
+            <el-form-item label="商品sku:" prop="sku">
               <el-input
                 style="width: 198px"
-                v-model="productForm.unit"
-                placeholder="请输入名称"
+                v-model="productForm.sku"
               ></el-input>
             </el-form-item>
             <el-form-item label="名称:" prop="name">
               <el-input
                 style="width: 198px"
-                v-model="productForm.unit"
-                placeholder="请输入名称"
+                v-model="productForm.name"
               ></el-input>
             </el-form-item>
             <el-form-item label="单位:" prop="unit">
-              <el-input
+              <el-select
                 style="width: 198px"
                 v-model="productForm.unit"
-                placeholder="请输入单位"
-              ></el-input>
+                placeholder=""
+              >
+                <el-option
+                  v-for="(item, index) in productUnit"
+                  :key="index"
+                  :label="item.label"
+                  :value="item.value"
+                ></el-option>
+              </el-select>
             </el-form-item>
             <el-form-item label="长:" prop="length">
               <el-input
@@ -365,8 +255,8 @@
                   placeholder=""
                   size="mini"
                 >
-                  <el-option label="cm" value="1"></el-option>
-                  <el-option label="inch" value="2"></el-option>
+                  <el-option label="cm" value="cm"></el-option>
+                  <el-option label="inch" value="inch"></el-option>
                 </el-select>
               </el-input>
             </el-form-item>
@@ -381,8 +271,8 @@
                   slot="append"
                   placeholder=""
                 >
-                  <el-option label="cm" value="1"></el-option>
-                  <el-option label="inch" value="2"></el-option>
+                  <el-option label="cm" value="cm"></el-option>
+                  <el-option label="inch" value="inch"></el-option>
                 </el-select>
               </el-input>
             </el-form-item>
@@ -397,8 +287,8 @@
                   slot="append"
                   placeholder=""
                 >
-                  <el-option label="cm" value="1"></el-option>
-                  <el-option label="inch" value="2"></el-option>
+                  <el-option label="cm" value="cm"></el-option>
+                  <el-option label="inch" value="inch"></el-option>
                 </el-select>
               </el-input>
             </el-form-item>
@@ -413,9 +303,11 @@
                   slot="append"
                   placeholder=""
                 >
-                  <el-option label="lbs" value="1"></el-option>
-                  <el-option label="kg" value="2"></el-option> </el-select
-              ></el-input>
+                  <el-option label="lbs" value="lbs"></el-option>
+                  <el-option label="kg" value="kg"></el-option>
+                  <el-option label="oz" value="oz"></el-option>
+                </el-select>
+              </el-input>
             </el-form-item>
           </el-col>
         </el-row>
@@ -431,19 +323,21 @@
         >
           对应SKU:
         </p>
-        <el-row type="flex" justify="space-between">
+        <el-row type="flex" class="shopSku" justify="space-between">
           <el-col :span="11">
-            <el-form-item label="店铺名称:" prop="name">
+            <el-form-item label="店铺名称:" prop="shop_id">
               <el-select
-                style="width: 314px; margin-bottom: 5px; height: 32px"
-                v-for="(item, index) in productForm.sku"
+                style="width: 314px; margin-bottom: 10px; height: 32px"
+                v-for="(item, index) in productForm.shopInfos"
                 :key="index"
-                v-model="item.value"
+                clearable
+                @change="(val) => handleShopsChange(val, index)"
+                v-model="item.shop_id"
                 placeholder="请选择店铺名称"
               >
                 <el-option
-                  v-for="item in options"
-                  :key="item.value"
+                  v-for="(item, index) in shoplist"
+                  :key="index"
                   :label="item.label"
                   :value="item.value"
                 >
@@ -453,14 +347,14 @@
           </el-col>
 
           <el-col :span="11">
-            <el-form-item label="店铺SKU:" prop="sku">
+            <el-form-item label="店铺SKU:" prop="shop_sku">
               <div>
                 <el-input
-                  style="width: 314px; margin-bottom: 5px"
+                  style="width: 314px; margin-bottom: 10px"
                   :placeholder="'SKU序号-' + (index + 1)"
-                  v-for="(item, index) in productForm.sku"
+                  v-for="(item, index) in productForm.shopInfos"
                   :key="index"
-                  v-model="item.value"
+                  v-model="item.shop_sku"
                   class="input-with-select"
                 >
                   <el-button
@@ -507,7 +401,7 @@
       width="45%"
       :before-close="handleClose"
     >
-      <div class="importdiv" v-if="importstatu == 'uploading'">
+      <div class="importdiv">
         <div class="importdivitem">
           <div class="importdivitem-left">
             <img src="/img/download.png" alt="" />
@@ -527,20 +421,12 @@
             <p class="p14">
               文件后缀名必须为xls或xlsx（即Excel格式）,文件大小不得大于2M，超过2M的请分批导入
             </p>
-            <el-upload
-              class="upload-demo"
-              action="#"
-              :on-preview="handlePreview"
-              :on-remove="handleRemove"
-              :before-remove="beforeRemove"
-              :on-change="handleChange"
-              :limit="1"
-              :on-exceed="handleExceed"
-              :file-list="fileList"
-              accept=".xls,.csv"
+            <upload-excel-component
+              :on-success="handleSuccess"
+              :before-upload="beforeUpload"
             >
-              <el-link type="primary">上传文件</el-link>
-            </el-upload>
+              <el-link type="primary"> 上传文件</el-link>
+            </upload-excel-component>
           </div>
         </div>
         <div class="importdivitem1">
@@ -551,147 +437,102 @@
           </p>
         </div>
       </div>
-      <div class="importdiv" v-if="importstatu == 'success'">
-        <div class="importsuccess">
-          <img src="/img/success.png" alt="" />
-          <p class="importstatu">导入成功</p>
-          <div class="listinfo">
-            <p>正常数据条数：<span class="green">100条</span></p>
-            <p>异常数据条数：<span class="red">0条</span></p>
-          </div>
-        </div>
-      </div>
-      <div class="importdiv" v-if="importstatu == 'falie'">
-        <div class="importerror">
-          <img src="/img/error.png" alt="" />
-          <p class="importstatu">导入失败</p>
-          <div class="listinfo">
-            <div class="listinfoitem">
-              <p>正常数据条数：<span class="green">100条</span></p>
-              <p>异常数据条数：<span class="red">0条</span></p>
-            </div>
-            <p class="pp"><i class="el-icon-info"></i>异常提示</p>
-            <div class="errorlist">
-              <p>
-                第3行：已存在名称为【 深圳市亿恩科技有限公司
-                】的客户，如果继续导入将会更新这条客户的数据
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-      <span slot="footer" class="dialog-footer">
-        <el-button
-          @click="importdialogVisible = false"
-          v-if="importstatu == 'uploading'"
-          >取 消</el-button
-        >
-        <el-button
-          type="primary"
-          @click="importstatu = 'falie'"
-          v-if="importstatu == 'uploading'"
-          >下一步</el-button
-        >
-        <el-button
-          type="primary"
-          @click="importdialogVisible = false"
-          v-if="importstatu == 'success'"
-          >确认</el-button
-        >
-        <el-button
-          type="primary"
-          @click="importstatu = 'uploading'"
-          v-if="importstatu == 'falie'"
-          >重新上传</el-button
-        >
-        <el-button
-          type="primary"
-          @click="importdialogVisible = false"
-          v-if="importstatu == 'falie'"
-          >确认</el-button
-        >
-      </span>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { readExcel } from '../../util/readXlsxFile.js'
-import productService from '../../services/productService'
+import noPage from '@/components/noPage/noPage.vue'
+import { mapState } from 'vuex'
+import { get, cloneDeep } from 'loadsh'
+import UploadExcelComponent from '@/components/UploadExcel/index.vue'
 import Axios from '@/https/axios'
-
+import productService from '../../services/productService'
+const initProductForm = {
+  shopInfos: [{ shop_id: '' }],
+  unit: null,
+  name: null,
+  length: null,
+  size_unit: 'cm',
+  width: null,
+  height: null,
+  weight: null,
+  weight_unit: 'lbs',
+  notes: null
+}
 export default {
-  components: {},
+  components: { noPage, UploadExcelComponent },
   created() {
-    this.getlist()
     this.getShopList()
   },
   data() {
     return {
-      tagkey: 1,
-      searchForm: {
-        sku: null,
-        name: null
-      },
-      list: [],
-      types: [],
-      listLoading: false,
-      listQuery: {
-        current: 1,
-        size: 10
-      },
-      total: 0,
+      editForm: { name: null, size_unit: '1', width: '' },
+      importdialogVisible: false,
       dialogVisible: false,
-      title: '',
-      value: 'opt2',
-      productForm: {
-        sku: [{ value: '' }],
-        unit: null,
-        name: null,
-        length: null,
-        size_unit: 'cm',
-        width: null,
-        height: null,
-        weight: null,
-        weight_unit: 'lbs',
-        notes: null
-      },
-      imageUrl: '',
+      options: [
+        {
+          isDefault: 1,
+          value: 'delete',
+          label: '删除'
+        }
+      ],
       productRules: {
         name: [
           { required: true, message: '请输入商品名称', trigger: 'blur' },
           { min: 1, max: 32, message: '长度在 1 到 32 个字符', trigger: 'blur' }
-        ]
+        ],
+        sku: [{ required: true, message: '请输入商品SKU', trigger: 'blur' }],
+        length: [{ required: true, message: '请输入商品长', trigger: 'blur' }],
+        width: [{ required: true, message: '请输入商品宽', trigger: 'blur' }],
+        height: [{ required: true, message: '请输入商品高', trigger: 'blur' }],
+        weight: [
+          { required: true, message: '请输入商品重量', trigger: 'blur' }
+        ],
+        unit: [{ required: true, message: '请选择商品单位', trigger: 'blur' }]
       },
-      importdialogVisible: false,
-      importstatu: 'uploading',
-      fileList: [],
-      options: [
+      imageUrl: '',
+      title: '',
+      productUnit: [
         {
-          value: 'opt1',
-          label: '确认仓库修改'
+          value: '条',
+          label: '件'
         },
         {
-          value: 'opt2',
-          label: '删除'
+          value: '条',
+          label: '条'
+        },
+        {
+          value: '个',
+          label: '个'
         }
-      ]
+      ],
+      shoplist: [],
+      productForm: cloneDeep(initProductForm)
     }
   },
-  watch: {
-    value(val) {
-      console.log(val)
+  computed: {
+    ...mapState('noPage', {
+      pagination: (state) => state.pagination
+    }),
+    Authorization() {
+      return window.localStorage.getItem('wms_auth_access_token')
+    },
+    filters: {
+      get() {
+        return this.$store.state.noPage.filters
+      },
+      set(value) {
+        console.log({ value })
+        this.$store.commit('noPage/updateMessage', value)
+      }
     }
+  },
+  beforeMount() {
+    this.$store.commit('noPage/setApi', '/iteminfo/search')
   },
   methods: {
-    async getShopList() {
-      const res = await Axios.fetchGet('/seller/shop/listShop')
-      console.log(res)
-      // this.options = res.records.map(x=>{})
-    },
-    ifempty(value) {
-      return value || '--'
-    },
+    get,
     submitForm() {
       if (this.title === '添加新商品') {
         this.addItem()
@@ -701,39 +542,22 @@ export default {
         this.updateItem()
       }
     },
-
-    async getlist() {
-      await productService.getListData().then((res) => {
-        this.list = res.content
-        this.total = res.totalElements
-      })
+    handleimport() {
+      this.importdialogVisible = true
     },
-    updateList(data) {
-      return productService.updateItem({
-        ...data,
-        sku: data.sku.filter((i) => i.value !== '').map((x) => x.value)
-      })
-    },
-    deleteItem(data) {
-      productService.deleteItem(data)
-    },
-    handleFilter() {
-      productService.getListData(this.searchForm)
-    },
-    searchReset() {
-      this.searchForm = {
-        sku: null,
-        name: null
+    handleEdit(row) {
+      this.productForm = row
+      if (!this.productForm.shopInfos || !this.productForm.shopInfos.length) {
+        this.addSKURow()
+      } else {
+        // this.productForm.shopInfos = this.productForm.shopInfos.map((value) => {
+        //   console.log(value)
+        //   return {
+        //     value: typeof value !== 'object' ? value : value.value
+        //   }
+        // })
       }
-    },
-    addSKURow() {
-      this.productForm.sku.push({ value: '' })
-    },
-    delSKURow(index) {
-      this.productForm.sku.splice(index, 1)
-    },
-    handleAdd() {
-      this.title = '添加新商品'
+      this.title = '编辑产品'
       this.dialogVisible = true
     },
     addItem() {
@@ -750,9 +574,10 @@ export default {
             weight_unit,
             size_unit,
             weight,
-            notes
+            notes,
+            shopInfos
           } = this.productForm
-          console.log(this.productForm)
+
           await productService.addItem({
             name,
             unit,
@@ -760,76 +585,77 @@ export default {
             length,
             height,
             width,
+            sku,
             weight,
             weight_unit,
             size_unit,
             notes,
-            sku: sku.map((x) => x.value)
+            shopInfos
           })
           this.dialogVisible = false
-          await this.getlist()
+          this.$store.dispatch('noPage/init')
+          this.$message.success('添加成功')
+
           this.$refs.productForm.resetFields()
+          try {
+          } catch (err) {
+            this.$message.error(err.payload.message)
+          }
         } else {
           console.log('error submit!!')
           return false
         }
       })
+    },
+    updateList(data) {
+      const {
+        height,
+        imgurl,
+        length,
+        name,
+        notes,
+        shopInfos,
+        size_unit,
+        sku,
+        unit,
+        weight,
+        weight_unit,
+        width
+      } = data
+      return productService.updateItem(
+        {
+          height,
+          imgurl,
+          length,
+          name,
+          notes,
+          shopInfos,
+          size_unit,
+          sku,
+          unit,
+          weight,
+          weight_unit,
+          width
+        },
+        data.openid
+      )
     },
     updateItem() {
       this.$refs.productForm.validate(async (valid) => {
         if (valid) {
-          await this.updateList(this.productForm)
-          await this.getlist()
-          this.dialogVisible = false
-          this.$refs.productForm.resetFields()
+          try {
+            await this.updateList(this.productForm)
+            this.$store.dispatch('noPage/init')
+            this.dialogVisible = false
+            this.$refs.productForm.resetFields()
+          } catch (err) {
+            this.$message.error(err.message.join(','))
+          }
         } else {
           console.log('error submit!!')
           return false
         }
       })
-    },
-    handleEdit(row) {
-      console.log(row)
-      this.productForm = row
-      if (!this.productForm.sku.length) {
-        this.addSKURow()
-      } else {
-        this.productForm.sku = this.productForm.sku.map((value) => {
-          console.log(value)
-          return {
-            value: typeof value !== 'object' ? value : value.value
-          }
-        })
-      }
-      this.title = '编辑产品'
-      this.dialogVisible = true
-    },
-    async handleCancleRequest(item) {
-      await productService.deleteItem({ item: item.openid })
-      console.log('Request cancled', item)
-    },
-    handleSubmitRequest() {
-      console.log('Request submitted')
-    },
-    handleimport() {
-      this.importstatu = 'uploading'
-      this.importdialogVisible = true
-    },
-    handleDelete(row) {
-      this.$confirm('此操作将永久删除该资讯, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        //
-      })
-    },
-    handleCurrentChange(val) {},
-    handleClose(done) {
-      done()
-    },
-    handleAvatarSuccess(res, file) {
-      this.imageUrl = URL.createObjectURL(file.raw)
     },
     beforeAvatarUpload(file) {
       // const extension = file.name.split('.')[1] === 'xls'
@@ -845,164 +671,184 @@ export default {
       }
       return isLt2M
     },
-    handleRemove(file, fileList) {
-      console.log(file, fileList)
+    handleShopsChange(val, index) {
+      const shop_name = this.shoplist.find((x) => x.value === val).label
+      this.productForm.shopInfos[index].shop_name = shop_name
     },
-    handlePreview(file) {
-      console.log(file)
+    addSKURow() {
+      console.log(this.productForm, this.productForm.shopInfos)
+      this.productForm.shopInfos = this.productForm.shopInfos || []
+      this.productForm.shopInfos.push({ shop_id: '' })
     },
-    handleChange(files, fileList) {
-      console.log(readExcel(files))
+    delSKURow(index) {
+      this.productForm.shopInfos.splice(index, 1)
     },
-    handleExceed(files, fileList) {
-      this.$message.warning(
-        `当前限制选择 1 个文件，本次选择了 ${files.length} 个文件，共选择了 ${
-          files.length + fileList.length
-        } 个文件`
+    beforeUpload(file) {
+      const isLt1M = file.size / 1024 / 1024 < 1
+
+      if (isLt1M) {
+        return true
+      }
+
+      this.$message({
+        message: '文件大于1M!',
+        type: 'warning'
+      })
+      return false
+    },
+    handleAvatarSuccess(res, file) {
+      this.imageUrl = URL.createObjectURL(file.raw)
+    },
+    async handleDeleteClick(item) {
+      await productService.deleteItem({ openid: item.openid })
+      console.log('Request cancled', item)
+      this.$store.dispatch('noPage/init')
+      this.$message.success('删除成功')
+    },
+    async handleSuccess({ results, header }) {
+      console.log({ results, header })
+      // this.tableHeader = header
+      await Axios.fetchPost(
+        '/iteminfo/addBatch',
+        results.map((x) => {
+          return {
+            height: x['高'],
+            length: x['长'],
+            name: x['商品名称'],
+            notes: x['备注'],
+            size_unit: x['尺寸单位'],
+            sku: x.SKU,
+            unit: x['商品单位'],
+            weight: x['重量'],
+            weight_unit: x['重量单位'],
+            width: x['宽']
+          }
+        })
       )
+      this.$store.dispatch('noPage/init')
+      this.importdialogVisible = false
+      this.$message.success('添加成功')
     },
-    beforeRemove(file, fileList) {
-      return this.$confirm(`确定移除 ${file.name}？`)
+    async getShopList() {
+      const res = await Axios.fetchGet('/seller/shop/listShop')
+      console.log(res)
+      this.shoplist = res.data.records.map((x) => ({
+        label: x.name,
+        value: x.id
+      }))
+      // this.options = res.records.map(x=>{})
     },
-    changtagkey(key) {
-      this.tagkey = key
+    handleAdd() {
+      this.title = '添加新商品'
+      this.dialogVisible = true
+    },
+    ifempty(value) {
+      return value || '--'
+    },
+    handleClose(done) {
+      done()
+    },
+    handleEditDialogClose(done) {
+      this.productForm = cloneDeep(initProductForm)
+      done()
+    },
+    handleFilter(value) {
+      this.$store.dispatch('noPage/init')
+    },
+    handleCancleRequest() {},
+    async handleBitchDispatch(key, array) {
+      console.log(key, array)
+      if (!array.length) this.$message.warning('请选择要批量操作的行')
+      await Axios.axios(
+        `/iteminfo/batchDel?${array.map((x) => 'ids=' + x.openid).join('&')}`,
+        {
+          method: 'delete'
+        }
+      )
+      this.$store.dispatch('noPage/init')
+      this.$message.success('添加成功')
+    },
+    handleCurrentChange(object) {
+      console.log(object)
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-p {
-  margin: 0;
+.el-dialog__body {
+  padding: 20px 10px;
 }
-.product-container {
-  width: 100%;
-  height: 100%;
-  width: 98%;
-  height: 100%;
-  margin: 15px 15px;
-  border-radius: 5px;
+/deep/.el-dialog__wrapper {
+  .el-dialog {
+    .el-dialog__header {
+      padding: 10px 20px 10px;
+      background: #efefef;
+    }
 
-  .title {
-    background: #ffffff;
-    width: 100%;
-    font-size: 18px;
-    font-family: Microsoft YaHei;
-    font-weight: bold;
-    color: #333333;
-    line-height: 21px;
-    height: 50px;
-    border-bottom: 1px solid #33333311;
-    display: flex;
-    align-items: center;
-    padding-left: 30px;
-    i {
-      color: #999999;
-      margin-right: 10px;
+    .el-dialog__body {
+      padding: 20px 20px;
     }
-  }
-  .filter-container {
-    width: 100%;
-    height: 12%;
-    background: #ffffff;
-    border-radius: 4px;
-    margin-bottom: 1%;
-    padding: 10px;
-    box-sizing: border-box;
-    /deep/.el-form-item {
-      vertical-align: bottom;
-      width: 15%;
-      .el-form-item__label {
-        line-height: 28px;
-      }
-    }
-    /deep/.el-form-item__content {
-      display: block;
-      .el-select {
-        width: 100%;
-      }
-    }
-  }
-  .twoheight1 {
-    width: 100%;
-    height: 86%;
-    background: #ffffff;
-    border-radius: 4px;
-    padding: 10px;
-    box-sizing: border-box;
-    .table-menu {
-      position: relative;
-      width: 100%;
-      height: 6%;
-      overflow: hidden;
-      margin: 0;
-      .table-menu-left {
-        position: absolute;
-        height: auto;
-        overflow: hidden;
-        left: 0;
-      }
 
-      .table-menu-right {
-        position: absolute;
-        height: auto;
-        overflow: hidden;
-        right: 0;
-      }
-    }
-    .el-table {
-      height: 87% !important;
-      margin: 0 !important;
-      overflow: auto;
-      border-bottom: 1px solid #ebeef5;
-    }
-    .tableactions-container {
-      margin-top: 10px;
-      width: 100%;
+    .el-dialog__footer {
       display: flex;
-      justify-content: space-between;
+      align-items: center;
+      justify-content: center;
+      border-top: 1px solid #b9b9b925;
+    }
+  }
+}
+
+/deep/.el-form-item {
+  .el-form-item__content {
+    .avatar-uploader {
+      .el-upload {
+        border: 1px dashed #d9d9d9;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .el-upload:hover {
+        border-color: #409eff;
+      }
     }
 
-    /deep/.avue-tags__menu {
-      margin-left: 10px;
+    .el-input {
+      .el-input__inner {
+        padding: 0 0px 0 10px;
+      }
+
+      .el-input-group__append {
+        .el-select {
+          .el-input {
+            .el-input__inner {
+              padding: 0 0 0 8px;
+            }
+
+            .el-input__suffix {
+              display: none;
+            }
+          }
+        }
+      }
     }
   }
-}
-.countdiv {
-  padding: 20px;
-  background: #000000;
-  opacity: 0.7;
-  border-radius: 5px;
-  .countitem {
-    display: flex;
-    align-items: center;
-    p {
-      font-size: 14px;
-      font-family: Microsoft YaHei;
-      font-weight: 400;
-      color: #ffffff;
-      line-height: 21px;
-    }
-  }
-}
-.tipdiv {
-  width: 130px;
-  height: 50px;
-  padding: 10px;
-  background: #000000;
-  opacity: 0.7;
-  border-radius: 5px;
-  font-size: 14px;
-  font-family: Microsoft YaHei;
-  font-weight: 400;
-  color: #ffffff;
-  line-height: 24px;
 }
 .product-form {
   /deep/.el-form-item {
     margin-right: 0px;
     .el-form-item__content {
       // width: calc(100% - 100px);
+      .avatar-uploader .avatar-uploader-icon {
+        font-size: 28px;
+        color: #8c939d;
+        width: 340px;
+        height: 350px;
+        line-height: 350px;
+        text-align: center;
+      }
       .avatar-uploader {
         // border: 1px dashed #d9d9d9;
         .el-upload {
@@ -1036,22 +882,12 @@ p {
     }
   }
 }
-/deep/.el-dialog__wrapper {
-  .el-dialog {
-    .el-dialog__header {
-      padding: 10px 20px 10px;
-      background: #efefef;
-    }
-    .el-dialog__body {
-      padding: 20px 20px;
-    }
-    .el-dialog__footer {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-top: 1px solid #b9b9b925;
-    }
-  }
+.col-label {
+  text-align: right;
+  vertical-align: middle;
+  font-size: 14px;
+  color: #606266;
+  padding-right: 10px;
 }
 .importdiv {
   padding: 0px 30px;
@@ -1252,13 +1088,9 @@ p {
     }
   }
 }
-
-.avatar-uploader .avatar-uploader-icon {
-  font-size: 28px;
-  color: #8c939d;
-  width: 340px;
-  height: 350px;
-  line-height: 350px;
-  text-align: center;
+.shopSku {
+  /deep/.el-form-item__label {
+    text-align: left;
+  }
 }
 </style>

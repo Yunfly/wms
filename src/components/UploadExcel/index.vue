@@ -8,21 +8,24 @@
       @change="handleClick"
     />
     <div
-      class="drop"
       @drop="handleDrop"
       @dragover="handleDragover"
       @dragenter="handleDragover"
+      @click="handleUpload"
     >
-      Drop excel file here or
-      <el-button
-        :loading="loading"
-        style="margin-left: 16px"
-        size="mini"
-        type="primary"
-        @click="handleUpload"
-      >
-        Browse
-      </el-button>
+      <slot>
+        <div class="drop">
+          Drop excel file here or
+          <el-button
+            :loading="loading"
+            style="margin-left: 16px"
+            size="mini"
+            type="primary"
+          >
+            Browse
+          </el-button>
+        </div>
+      </slot>
     </div>
   </div>
 </template>
@@ -77,6 +80,7 @@ export default {
       e.dataTransfer.dropEffect = 'copy'
     },
     handleUpload() {
+      console.log(2)
       this.$refs['excel-upload-input'].click()
     },
     handleClick(e) {

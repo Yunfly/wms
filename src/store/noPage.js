@@ -19,7 +19,7 @@ const state = {
   api: '',
   dataSource: [],
   pagination: {
-    number: 1,
+    current: 1,
     size: 10
   },
   pageTotal: null,
@@ -63,7 +63,7 @@ const actions = {
   },
   async init(ctx, playload = {}) {
     const {
-      number,
+      current,
       size
     } = ctx.state.pagination
 
@@ -72,7 +72,7 @@ const actions = {
       const res = await Axios.fetchGet(ctx.state.api, filterObject({
         ...playload,
         ...ctx.state.filters,
-        number,
+        current,
         size
       }))
 

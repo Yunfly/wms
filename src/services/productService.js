@@ -21,7 +21,7 @@ export default class ProductService {
 
   static addItem(params) {
     return new Promise((resolve, reject) => {
-      Axios.fetchPost('/item/add', params, true).then(
+      Axios.fetchPost('/iteminfo/add', params, true).then(
         (res) => {
           if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
             resolve(res.data)
@@ -38,7 +38,7 @@ export default class ProductService {
 
   static deleteItem(params) {
     return new Promise((resolve, reject) => {
-      Axios.axios('/item/del', {
+      Axios.axios('/iteminfo/del', {
         params,
         method: 'DELETE'
       }).then(
@@ -56,9 +56,9 @@ export default class ProductService {
     })
   }
 
-  static updateItem(data) {
+  static updateItem(data, openid) {
     return new Promise((resolve, reject) => {
-      Axios.axios('/item/update', {
+      Axios.axios(`/iteminfo/update?openid=${openid}`, {
         data,
         method: 'PUT'
       }).then(
