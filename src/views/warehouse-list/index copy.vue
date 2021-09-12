@@ -1,43 +1,24 @@
 <template>
   <div class="product-container">
-    <div class="filter-container">
-      <el-form :inline="true" :model="searchForm" ref="searchForm">
-        <el-form-item label="SKU:" prop="sku">
-          <el-input
-            class="filter-item input-normal"
-            v-model="searchForm.sku"
-            placeholder="请输入库存量单位"
-          ></el-input>
-        </el-form-item>
-        <el-form-item label="商品名:" prop="name">
-          <el-input
-            class="filter-item input-normal"
-            v-model="searchForm.name"
-            placeholder="请输入商品名"
-          ></el-input>
-        </el-form-item>
-        <el-form-item style="width: 300px">
-          <el-button
-            size="small"
-            @click="searchReset"
-            icon="icon iconfont icon-qingkong"
-            type="primary"
-            plain
-            >清空查询条件
-          </el-button>
-          <el-button
-            size="small"
-            type="primary"
-            icon="icon iconfont icon-chaxun"
-            @click="handleFilter"
-            >查询
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </div>
+    <search />
+
     <!-- 表格功能列 -->
     <div class="twoheight1">
       <div class="table-menu">
+        <div class="table-menu-left">
+          <el-button-group>
+            <el-button size="small" class="filter-item" type="primary"
+              >全部仓库
+            </el-button>
+            <el-button size="small" class="filter-item" type="primary" plain
+              >签约仓库
+            </el-button>
+            <el-button size="small" class="filter-item" type="primary" plain
+              >预存仓库
+            </el-button>
+          </el-button-group>
+        </div>
+
         <div class="table-menu-left"></div>
         <div class="table-menu-right">
           <el-button-group>
@@ -76,7 +57,7 @@
           <template slot-scope="scope">
             <div>
               <img src="" alt="" />
-              <span>{{ ifempty(scope.row.openid) }}</span>
+              <span>{{ ifempty(scope.row.rid) }}</span>
             </div>
           </template>
         </el-table-column>
@@ -84,8 +65,8 @@
           <template slot-scope="scope">
             <div>
               <img src="" alt="" />
-              <span>{{ ifempty(scope.row.sku) }}</span>
-              <!-- <el-popover
+              <span>{{ ifempty(scope.row.selsku) }}</span>
+              <el-popover
                 placement="right-start"
                 title=""
                 trigger="hover"
@@ -102,34 +83,33 @@
                   </div>
                 </div>
                 <i class="el-icon-question" slot="reference"></i>
-              </el-popover> -->
+              </el-popover>
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="名称">
+        <el-table-column label="仓库名">
           <template slot-scope="scope">
             <span>{{ ifempty(scope.row.name) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="单位" width="100">
+        <el-table-column label="地址" width="100">
           <template slot-scope="scope">
             <span>{{ ifempty(scope.row.unit) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="重量" width="100">
+        <el-table-column label="类型" width="100">
           <template slot-scope="scope">
             <span>{{ ifempty(scope.row.weight) }}</span>
           </template>
         </el-table-column>
-        <el-table-column label="尺寸 (长宽高/单位)">
+        <el-table-column label="面积">
           <template slot-scope="scope">
-            <span
-              >{{ ifempty(scope.row.width) }}、{{
-                ifempty(scope.row.length)
-              }}、{{ ifempty(scope.row.height) }} ({{
-                ifempty(scope.row.weight_unit)
-              }})</span
-            >
+            <span>{{ ifempty(scope.row.size) }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="星级">
+          <template slot-scope="scope">
+            <span>{{ ifempty(scope.row.size) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="操作" fixed="right" width="150">
@@ -291,7 +271,7 @@
     <el-dialog
       :title="title"
       :visible.sync="dialogVisible"
-      width="800px"
+      width="52%"
       :before-close="handleClose"
     >
       <el-form
@@ -299,206 +279,145 @@
         class="product-form"
         label-width="100px"
         :rules="productRules"
-        size="small"
         ref="productForm"
         :inline="true"
       >
-        <el-row type="flex" align="middle" justify="center" class="row-bg">
-          <el-col :span="12" style="text-align: center">
-            <el-form-item prop="imageUrl" style="margin-top: 20px">
-              <el-upload
-                class="avatar-uploader"
-                action="/api/file/upload"
-                :show-file-list="false"
-                :on-success="handleAvatarSuccess"
-                :before-upload="beforeAvatarUpload"
-              >
-                <img v-if="imageUrl" :src="imageUrl" class="avatar" />
-                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-              </el-upload>
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <p
-              style="
-                font-family: Microsoft YaHei;
-                font-weight: bold;
-                color: rgb(0, 0, 0);
-                line-height: 50px;
-                text-align: left;
-                font-size: 16px;
-              "
-            >
-              基本信息
-            </p>
-            <!-- todo: 新增名称和商品sku -->
-            <el-form-item label="商品sku:" prop="name">
-              <el-input
-                style="width: 198px"
-                v-model="productForm.unit"
-                placeholder="请输入名称"
-              ></el-input>
-            </el-form-item>
-            <el-form-item label="名称:" prop="name">
-              <el-input
-                style="width: 198px"
-                v-model="productForm.unit"
-                placeholder="请输入名称"
-              ></el-input>
-            </el-form-item>
-            <el-form-item label="单位:" prop="unit">
-              <el-input
-                style="width: 198px"
-                v-model="productForm.unit"
-                placeholder="请输入单位"
-              ></el-input>
-            </el-form-item>
-            <el-form-item label="长:" prop="length">
-              <el-input
-                type="number"
-                v-model="productForm.length"
-                placeholder="请输入长"
-              >
-                <el-select
-                  v-model="productForm.size_unit"
-                  slot="append"
-                  placeholder=""
-                  size="mini"
-                >
-                  <el-option label="cm" value="1"></el-option>
-                  <el-option label="inch" value="2"></el-option>
-                </el-select>
-              </el-input>
-            </el-form-item>
-            <el-form-item label="宽:" prop="width">
-              <el-input
-                type="number"
-                v-model="productForm.width"
-                placeholder="请输入宽"
-              >
-                <el-select
-                  v-model="productForm.size_unit"
-                  slot="append"
-                  placeholder=""
-                >
-                  <el-option label="cm" value="1"></el-option>
-                  <el-option label="inch" value="2"></el-option>
-                </el-select>
-              </el-input>
-            </el-form-item>
-            <el-form-item label="高:" prop="height">
-              <el-input
-                type="number"
-                v-model="productForm.height"
-                placeholder="请输入高"
-              >
-                <el-select
-                  v-model="productForm.size_unit"
-                  slot="append"
-                  placeholder=""
-                >
-                  <el-option label="cm" value="1"></el-option>
-                  <el-option label="inch" value="2"></el-option>
-                </el-select>
-              </el-input>
-            </el-form-item>
-            <el-form-item label="重量:" prop="weight">
-              <el-input
-                type="number"
-                v-model="productForm.weight"
-                placeholder="请输入重量"
-              >
-                <el-select
-                  v-model="productForm.weight_unit"
-                  slot="append"
-                  placeholder=""
-                >
-                  <el-option label="lbs" value="1"></el-option>
-                  <el-option label="kg" value="2"></el-option> </el-select
-              ></el-input>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
         <p
           style="
-            font-size: 16px;
+            font-size: 14px;
             font-family: Microsoft YaHei;
             font-weight: bold;
             color: #000;
             line-height: 50px;
           "
         >
-          对应SKU:
+          预计单个包裹尺寸：
         </p>
-        <el-row type="flex" justify="space-between">
-          <el-col :span="11">
-            <el-form-item label="店铺名称:" prop="name">
-              <el-select
-                style="width: 314px; margin-bottom: 5px; height: 32px"
-                v-for="(item, index) in productForm.sku"
-                :key="index"
-                v-model="item.value"
-                placeholder="请选择店铺名称"
-              >
-                <el-option
-                  v-for="item in options"
-                  :key="item.value"
-                  :label="item.label"
-                  :value="item.value"
-                >
-                </el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-
-          <el-col :span="11">
-            <el-form-item label="店铺SKU:" prop="sku">
-              <div>
-                <el-input
-                  style="width: 314px; margin-bottom: 5px"
-                  :placeholder="'SKU序号-' + (index + 1)"
-                  v-for="(item, index) in productForm.sku"
-                  :key="index"
-                  v-model="item.value"
-                  class="input-with-select"
-                >
-                  <el-button
-                    @click="addSKURow"
-                    v-if="index == 0"
-                    slot="append"
-                    icon="el-icon-plus"
-                    circle
-                  ></el-button>
-                  <el-button
-                    @click="delSKURow(index)"
-                    v-if="index != 0"
-                    slot="append"
-                    icon="el-icon-minus"
-                    circle
-                  ></el-button>
-                </el-input>
-              </div>
-            </el-form-item>
-          </el-col>
-        </el-row>
-
-        <el-form-item label="备注:" label-width="50" prop="notes">
+        <el-form-item label="长:" prop="pl" style="width: 24%">
+          <el-input v-model="productForm.pl" placeholder="请输入长">
+            <el-select
+              v-model="productForm.plunit"
+              slot="append"
+              placeholder=""
+              size="mini"
+            >
+              <el-option label="cm" value="1"></el-option>
+              <el-option label="inch" value="2"></el-option>
+            </el-select>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="宽:" prop="pw" style="width: 24%">
+          <el-input v-model="productForm.pw" placeholder="请输入宽">
+            <el-select
+              v-model="productForm.pwunit"
+              slot="append"
+              placeholder=""
+            >
+              <el-option label="cm" value="1"></el-option>
+              <el-option label="inch" value="2"></el-option>
+            </el-select>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="高:" prop="ph" style="width: 24%">
+          <el-input v-model="productForm.ph" placeholder="请输入高">
+            <el-select
+              v-model="productForm.phunit"
+              slot="append"
+              placeholder=""
+            >
+              <el-option label="cm" value="1"></el-option>
+              <el-option label="inch" value="2"></el-option>
+            </el-select>
+          </el-input>
+        </el-form-item>
+        <el-form-item label="重量:" prop="pweight" style="width: 24%">
+          <el-input v-model="productForm.pweight" placeholder="请输入重量">
+            <el-select
+              v-model="productForm.pweunit"
+              slot="append"
+              placeholder=""
+            >
+              <el-option label="lbs" value="1"></el-option>
+              <el-option label="kg" value="2"></el-option> </el-select
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="商品图片:" prop="imageUrl" style="width: 48%">
+          <el-upload
+            class="avatar-uploader"
+            action="#"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+          >
+            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+        </el-form-item>
+        <el-form-item label="备注:" prop="pdesc" style="width: 48%">
           <el-input
             type="textarea"
             maxlength="300"
-            style="width: 760px"
-            rows="6"
             show-word-limit
-            v-model="productForm.notes"
+            v-model="productForm.pdesc"
             placeholder="请填写备注相关信息"
           ></el-input>
+        </el-form-item>
+        <p
+          style="
+            font-size: 14px;
+            font-family: Microsoft YaHei;
+            font-weight: bold;
+            color: #000;
+            line-height: 50px;
+          "
+        >
+          商品信息：
+        </p>
+        <el-form-item label="名称:" prop="productname" style="width: 48%">
+          <el-input v-model="productForm.productname" placeholder="请输入名称">
+            <i slot="suffix" class="fa fa-barcode" aria-hidden="true"></i
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="单位:" prop="unit" style="width: 48%">
+          <el-input
+            v-model="productForm.unit"
+            placeholder="请输入单位"
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="产品SKU:" prop="sku" style="width: 48%">
+          <div>
+            <el-input
+              :placeholder="'SKU序号-' + (index + 1)"
+              v-for="(item, index) in productForm.sku"
+              :key="index"
+              v-model="item.value"
+              class="input-with-select"
+              style="margin-bottom: 5px"
+            >
+              <el-button
+                @click="addSKURow"
+                v-if="index == 0"
+                slot="append"
+                icon="el-icon-plus"
+                circle
+              ></el-button>
+              <el-button
+                @click="delSKURow(index)"
+                v-if="index != 0"
+                slot="append"
+                icon="el-icon-minus"
+                circle
+              ></el-button>
+            </el-input>
+          </div>
         </el-form-item>
       </el-form>
 
       <span slot="footer" class="dialog-footer">
         <el-button @click="dialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="submitForm">保 存</el-button>
+        <el-button type="primary" @click="dialogVisible = false"
+          >保 存</el-button
+        >
       </span>
     </el-dialog>
     <el-dialog
@@ -617,23 +536,60 @@
 
 <script>
 import { readExcel } from '../../util/readXlsxFile.js'
-import productService from '../../services/productService'
-import Axios from '@/https/axios'
-
+import search from '../../components/search/index.vue'
 export default {
-  components: {},
-  created() {
-    this.getlist()
-    this.getShopList()
-  },
+  components: { search },
+  created() {},
   data() {
     return {
+      value: {},
       tagkey: 1,
       searchForm: {
         sku: null,
         name: null
       },
-      list: [],
+      list: [
+        {
+          imgurl: '',
+          rid: 1,
+          stksku: 'UN001',
+          selsku: 'IBSTONE0BLACK-001',
+          name: '一次性一用口罩',
+          unit: 'Set',
+          weight: '7kg',
+          size: null,
+          count: 300,
+          counts: [
+            {
+              warehousename: '北卡仓',
+              warehousecount: 15
+            }
+          ],
+          price: 100,
+          desc: '',
+          ptype: 0
+        },
+        {
+          imgurl: '',
+          rid: 2,
+          stksku: 'UN002',
+          selsku: 'IBSTONE0BLACK-001',
+          name: '一次性一用口罩',
+          unit: 'Set',
+          weight: '7kg',
+          size: null,
+          count: 300,
+          counts: [
+            {
+              warehousename: '南卡仓',
+              warehousecount: 10
+            }
+          ],
+          price: 100,
+          desc: '',
+          ptype: 1
+        }
+      ],
       types: [],
       listLoading: false,
       listQuery: {
@@ -643,24 +599,33 @@ export default {
       total: 0,
       dialogVisible: false,
       title: '',
-      value: 'opt2',
       productForm: {
         sku: [{ value: '' }],
         unit: null,
-        name: null,
-        length: null,
-        size_unit: 'cm',
-        width: null,
-        height: null,
-        weight: null,
-        weight_unit: 'lbs',
-        notes: null
+        productname: null,
+        pl: null,
+        plunit: 'cm',
+        pw: null,
+        pwunit: 'cm',
+        ph: null,
+        phunit: 'cm',
+        pweight: null,
+        pweunit: 'lbs',
+        pdesc: null
       },
       imageUrl: '',
       productRules: {
-        name: [
-          { required: true, message: '请输入商品名称', trigger: 'blur' },
-          { min: 1, max: 32, message: '长度在 1 到 32 个字符', trigger: 'blur' }
+        barcode: [
+          { required: true, message: '请输入有效密码', trigger: 'blur' },
+          { min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' }
+        ],
+        productname: [
+          { required: true, message: '请输入有效密码', trigger: 'blur' },
+          { min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' }
+        ],
+        price: [
+          { required: true, message: '请输入有效密码', trigger: 'blur' },
+          { min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' }
         ]
       },
       importdialogVisible: false,
@@ -678,54 +643,13 @@ export default {
       ]
     }
   },
-  watch: {
-    value(val) {
-      console.log(val)
-    }
-  },
   methods: {
-    async getShopList() {
-      const res = await Axios.fetchGet('/seller/shop/listShop')
-      console.log(res)
-      // this.options = res.records.map(x=>{})
-    },
     ifempty(value) {
       return value || '--'
     },
-    submitForm() {
-      if (this.title === '添加新商品') {
-        this.addItem()
-      }
-
-      if (this.title === '编辑产品') {
-        this.updateItem()
-      }
-    },
-
-    async getlist() {
-      await productService.getListData().then((res) => {
-        this.list = res.content
-        this.total = res.totalElements
-      })
-    },
-    updateList(data) {
-      return productService.updateItem({
-        ...data,
-        sku: data.sku.filter((i) => i.value !== '').map((x) => x.value)
-      })
-    },
-    deleteItem(data) {
-      productService.deleteItem(data)
-    },
-    handleFilter() {
-      productService.getListData(this.searchForm)
-    },
-    searchReset() {
-      this.searchForm = {
-        sku: null,
-        name: null
-      }
-    },
+    getlist() {},
+    handleFilter() {},
+    searchReset() {},
     addSKURow() {
       this.productForm.sku.push({ value: '' })
     },
@@ -736,77 +660,12 @@ export default {
       this.title = '添加新商品'
       this.dialogVisible = true
     },
-    addItem() {
-      this.$refs.productForm.validate(async (valid) => {
-        if (valid) {
-          const {
-            name,
-            unit,
-            imgurl,
-            sku,
-            length,
-            height,
-            width,
-            weight_unit,
-            size_unit,
-            weight,
-            notes
-          } = this.productForm
-          console.log(this.productForm)
-          await productService.addItem({
-            name,
-            unit,
-            imgurl,
-            length,
-            height,
-            width,
-            weight,
-            weight_unit,
-            size_unit,
-            notes,
-            sku: sku.map((x) => x.value)
-          })
-          this.dialogVisible = false
-          await this.getlist()
-          this.$refs.productForm.resetFields()
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
-    },
-    updateItem() {
-      this.$refs.productForm.validate(async (valid) => {
-        if (valid) {
-          await this.updateList(this.productForm)
-          await this.getlist()
-          this.dialogVisible = false
-          this.$refs.productForm.resetFields()
-        } else {
-          console.log('error submit!!')
-          return false
-        }
-      })
-    },
     handleEdit(row) {
-      console.log(row)
-      this.productForm = row
-      if (!this.productForm.sku.length) {
-        this.addSKURow()
-      } else {
-        this.productForm.sku = this.productForm.sku.map((value) => {
-          console.log(value)
-          return {
-            value: typeof value !== 'object' ? value : value.value
-          }
-        })
-      }
       this.title = '编辑产品'
       this.dialogVisible = true
     },
-    async handleCancleRequest(item) {
-      await productService.deleteItem({ item: item.openid })
-      console.log('Request cancled', item)
+    handleCancleRequest() {
+      console.log('Request cancled')
     },
     handleSubmitRequest() {
       console.log('Request submitted')
@@ -832,18 +691,18 @@ export default {
       this.imageUrl = URL.createObjectURL(file.raw)
     },
     beforeAvatarUpload(file) {
-      // const extension = file.name.split('.')[1] === 'xls'
-      // const extension2 = file.name.split('.')[1] === 'xlsx'
+      const extension = file.name.split('.')[1] === 'xls'
+      const extension2 = file.name.split('.')[1] === 'xlsx'
 
       const isLt2M = file.size / 1024 / 1024 < 2
 
-      // if (!extension && !extension2) {
-      //   this.$message.error('上传文件只能是 xls、xlsx格式!')
-      // }
+      if (!extension && !extension2) {
+        this.$message.error('上传文件只能是 xls、xlsx格式!')
+      }
       if (!isLt2M) {
         this.$message.error('上传头像图片大小不能超过 2MB!')
       }
-      return isLt2M
+      return !extension && !extension2 && isLt2M
     },
     handleRemove(file, fileList) {
       console.log(file, fileList)
@@ -1002,7 +861,7 @@ p {
   /deep/.el-form-item {
     margin-right: 0px;
     .el-form-item__content {
-      // width: calc(100% - 100px);
+      width: calc(100% - 100px);
       .avatar-uploader {
         // border: 1px dashed #d9d9d9;
         .el-upload {
@@ -1251,14 +1110,5 @@ p {
       }
     }
   }
-}
-
-.avatar-uploader .avatar-uploader-icon {
-  font-size: 28px;
-  color: #8c939d;
-  width: 340px;
-  height: 350px;
-  line-height: 350px;
-  text-align: center;
 }
 </style>

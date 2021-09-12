@@ -38,6 +38,7 @@
       <el-table
         key="0"
         :data="dataSource"
+        size="small"
         border
         v-loading="listLoading"
         element-loading-text="加载中..."
@@ -47,26 +48,29 @@
         <slot name="table"></slot>
       </el-table>
       <div class="tableactions-container">
-        <div v-show="options && options.length">
-          <el-select v-model="value" placeholder="选择执行的操作">
-            <el-option
-              v-for="item in options"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
+        <div>
+          <div v-show="options && options.length">
+            <el-select v-model="value" placeholder="选择执行的操作">
+              <el-option
+                v-for="item in options"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value"
+              >
+              </el-option>
+            </el-select>
+            <el-button
+              title="批量执行"
+              type="primary"
+              size="medium"
+              style="margin-left: 7px"
+              @click="$emit('handleBitchDispatch', value)"
             >
-            </el-option>
-          </el-select>
-          <el-button
-            title="批量执行"
-            type="primary"
-            size="medium"
-            style="margin-left: 7px"
-            @click="$emit('handleBitchDispatch', value)"
-          >
-            批量执行
-          </el-button>
+              批量执行
+            </el-button>
+          </div>
         </div>
+
         <el-pagination
           @current-change="handleCurrentChange"
           :current-page.sync="pagination.number"

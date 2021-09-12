@@ -1,4 +1,5 @@
-// TODO: 商品备注取消，增加包裹备注，和批次备注
+// TODO: 添加包裹时对每个商品增加服务， /api/seller/getContractByModel 查看仓库某模块增值服务条款 services对应每一条服务id
+外层和包裹里面均有备注
 
 <template>
   <div class="forecaststorage-container">
@@ -18,7 +19,7 @@
         <!-- 所有仓库列表 -->
         <el-form-item label="接受仓库:" prop="warsehouse" style="width: 40%">
           <CrudSelect
-            :dic="cangkus"
+            :dic="listPository"
             v-model="storageFrom.warsehouse"
             label=""
           ></CrudSelect>
@@ -122,7 +123,7 @@
     <el-dialog
       title="单个包裹信息"
       :visible.sync="dialogVisible"
-      width="52%"
+      width="1000px"
       :before-close="handleClose"
     >
       <div class="packagebox">
@@ -158,7 +159,11 @@
                       }
                     ]"
                   >
-                    <el-select placeholder v-model="scope.row.name">
+                    <el-select
+                      @change="(value) => productSelect(value, scope.$index)"
+                      placeholder
+                      v-model="scope.row.name"
+                    >
                       <el-option
                         v-for="(item, index) in products"
                         :key="index"
@@ -185,23 +190,23 @@
                     <el-input
                       v-model.number="scope.row.count"
                       style="width: 100%"
-                      @change="calRowAmount(scope.$index)"
                     ></el-input>
                   </el-form-item>
                 </template>
               </el-table-column>
-              <el-table-column prop="weight" label="单位重量" width="100px">
+              <el-table-column
+                prop="unit-weight"
+                label="单位重量"
+                width="100px"
+              >
                 <template slot-scope="scope">
                   <el-form-item
-                    :prop="'list.' + scope.$index + '.weight'"
+                    :prop="'list.' + scope.$index + '.unit-weight'"
                     :rules="[
                       { required: true, message: '请输入数量', trigger: 'blur' }
                     ]"
                   >
-                    <el-input
-                      v-model.number="scope.row.weight"
-                      style="width: 100%"
-                    ></el-input>
+                    {{ scope.row['unit-weight'] }}
                   </el-form-item>
                 </template>
               </el-table-column>
@@ -211,17 +216,7 @@
                 width="100px"
               >
                 <template slot-scope="scope">
-                  <el-form-item
-                    :prop="'list.' + scope.$index + '.totalweight'"
-                    :rules="[
-                      { required: true, message: '请输入数量', trigger: 'blur' }
-                    ]"
-                  >
-                    <el-input
-                      v-model.number="scope.row.totalweight"
-                      style="width: 100%"
-                    ></el-input>
-                  </el-form-item>
+                  {{ scope.row['unit-weight'] * scope.row['count'] || '' }}
                 </template>
               </el-table-column>
               <el-table-column
@@ -265,7 +260,8 @@
                     ]"
                   >
                     <el-input
-                      v-model.number="scope.row.describe"
+                      type="textarea"
+                      v-model="scope.row.describe"
                       style="width: 100%"
                     ></el-input>
                   </el-form-item>
@@ -417,11 +413,14 @@
 
 <script>
 import CrudSelect from '../../components/avue/crud-select.vue'
+import Axios from '@/https/axios'
 export default {
   components: {
     CrudSelect
   },
-  created() {},
+  created() {
+    this.init()
+  },
   data() {
     return {
       storageFrom: {
@@ -474,6 +473,7 @@ export default {
           price: 100
         }
       ],
+      listPository: [],
       dialogVisible: false,
       products: [
         {
@@ -500,6 +500,28 @@ export default {
     }
   },
   methods: {
+    async init() {
+      const res = await Axios.fetchGet('/seller/listPository')
+      console.log(res)
+      // seller/listPository
+      this.listPository = res.data.records.map((x) => ({
+        label: x.name,
+        value: x.id
+      }))
+
+      const productsRes = await Axios.fetchGet('/iteminfo/get')
+      this.products = productsRes.data.content.map((x) => ({
+        label: x.name,
+        value: x.uuid,
+        weight: x.weight
+      }))
+    },
+    productSelect(uid, index) {
+      // console.log(value)
+      const weight = this.products.find((x) => x.value === uid)
+      this.packageForm.list[index]['unit-weight'] = weight.weight
+      // 1ad11e3e-9137-4f88-ad17-21db9c751b3d
+    },
     ifempty(value) {
       return value || '--'
     },

@@ -68,6 +68,10 @@
             <i class="icon iconfont icon-xingzhuang102"></i>
             <span slot="title">用户列表</span>
           </el-menu-item>
+          <el-menu-item index="/warehouse-list" v-if="userrole == 2">
+            <i class="icon iconfont icon-xingzhuang102"></i>
+            <span slot="title">仓库列表</span>
+          </el-menu-item>
           <el-menu-item index="">
             <i class="icon iconfont icon-ziyuan1"></i>
             <span slot="title">数据报表</span>
