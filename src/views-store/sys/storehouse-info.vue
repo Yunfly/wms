@@ -98,9 +98,9 @@
         ref="editForm"
         labelPosition="top"
       >
-        <el-form-item label="仓库名称:" prop="name">
+        <!-- <el-form-item label="仓库名称:" prop="name">
           <el-input v-model="editForm.name"> </el-input
-        ></el-form-item>
+        ></el-form-item> -->
 
         <el-form-item label="仓库面积:" prop="area">
           <el-input v-model="editForm.area">
@@ -181,7 +181,7 @@ import noPage from '@/components/noPage/noPage.vue'
 import Axios from '@/https/axios'
 import { mapGetters, mapState } from 'vuex'
 const initForm = {
-  name: '',
+  // name: '',
   mainStreet: '',
   subStreet: '',
   city: '',
@@ -198,7 +198,7 @@ export default {
   data() {
     return {
       editForm: {
-        name: '',
+        // name: '',
         mainStreet: '',
         subStreet: '',
         city: '',
@@ -220,12 +220,6 @@ export default {
       ],
       importdialogVisible: false,
       loginRules: {
-        name: [
-          {
-            required: true,
-            trigger: 'blur'
-          }
-        ],
         subStreet: [
           {
             required: true,
@@ -321,7 +315,7 @@ export default {
     }) {
       this.dialogTitle = '编辑仓库'
       let size_unit = '平方米'
-      if (~area.indexOf('平方公尺')) {
+      if (area && ~area.indexOf('平方公尺')) {
         size_unit = '平方公尺'
       }
       this.editForm = {
@@ -331,7 +325,9 @@ export default {
         mainStreet,
         subStreet,
         type,
-        area: +area.split('').reduce((x, y) => (isNaN(y) ? x : x + y), 0),
+        area: area
+          ? +area.split('').reduce((x, y) => (isNaN(y) ? x : x + y), 0)
+          : '',
         city,
         state,
         country,

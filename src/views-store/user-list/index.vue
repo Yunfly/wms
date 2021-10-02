@@ -118,7 +118,7 @@
             </el-button>
             <el-dropdown
               style="margin-left: 10px"
-              @command="(command) => handleCommand(scope.row.id, command)"
+              @command="(command) => handleCommand(scope.row, command)"
             >
               <el-button type="text" size="small">更多</el-button>
               <el-dropdown-menu slot="dropdown">
@@ -246,16 +246,19 @@ export default {
     }
   },
   beforeMount() {
+    // TODO: type: true 为卖家修订合同 走审批修订逻辑，false: 卖家已经签约合同
+    //  statu: true 同意，false 拒绝， null 未操作
+    //  remove： true 解约，没有签约逻辑操作
     this.$store.commit(
       'noPage/setApi',
-      '/warehouse/contract/listRelation?id=bca4360ec8b519ea87393b1a6184baff'
+      '/warehouse/contract/listRelation?id=2fe28e5757bcdfeb262c6664dc90f3d9'
     )
   },
   methods: {
-    handleCommand(id, command) {
-      if (command === 'handleAddRelation') return this.handleAddRelation(id)
-      if (command === 'viewTerms') return this.viewTerms(id)
-      if (command === 'handleJcht') return this.handleJcht(id)
+    handleCommand(row, command) {
+      if (command === 'handleAddRelation') return this.handleAddRelation(row.id)
+      if (command === 'viewTerms') return this.viewTerms(row.cid)
+      if (command === 'handleJcht') return this.handleJcht(row.id)
     },
     handleTermsClose() {
       this.viewTermsContract = false
