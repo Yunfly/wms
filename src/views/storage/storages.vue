@@ -477,7 +477,7 @@ export default {
   },
   methods: {
     async fetchshoplist() {
-      const shoplist = await Axios.fetchGet('/seller/listPository')
+      const shoplist = await Axios.fetchGet('/seller/firstpass/listPository')
       this.warehouselist = shoplist.data.records.map((x) => ({
         seller: x.name,
         id: x.id

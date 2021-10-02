@@ -86,17 +86,20 @@
         </el-table-column>
         <el-table-column label="地址" width="100">
           <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.main_street) }}</span>
+            <span>{{ ifempty(scope.row.mainStreet) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="类型" width="100">
           <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.weight) }}</span>
+            <span
+              >{{ scope.row.type === true ? '全职' : ''
+              }}{{ scope.row.type === false ? '兼职' : '' }}</span
+            >
           </template>
         </el-table-column>
         <el-table-column label="面积">
           <template slot-scope="scope">
-            <span>{{ ifempty(scope.row.size) }}</span>
+            <span>{{ ifempty(scope.row.area) }}</span>
           </template>
         </el-table-column>
         <el-table-column label="星级" width="180">
@@ -121,18 +124,20 @@
             >
               保存仓库
             </el-button>
-            <el-dropdown style="margin-left: 10px">
-              <el-button
-                title="签约"
-                type="primary"
-                size="mini"
-                @click="handleAddRelation(scope.row.id)"
-              >
-                签约
-              </el-button>
-              <el-dropdown-menu @command="handleCommand" slot="dropdown">
-                <el-dropdown-item>查看服务条款</el-dropdown-item>
-                <el-dropdown-item @click="handleJcht"
+            <el-dropdown
+              style="margin-left: 10px"
+              @command="(command) => handleCommand(scope.row.id, command)"
+            >
+              <el-button type="text" size="small">更多</el-button>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="handleAddRelation">
+                  签约
+                </el-dropdown-item>
+
+                <el-dropdown-item command="viewTerms"
+                  >查看服务条款</el-dropdown-item
+                >
+                <el-dropdown-item command="handleJcht"
                   >解除合同</el-dropdown-item
                 >
               </el-dropdown-menu>
@@ -192,6 +197,16 @@
         </span>
       </div>
     </el-dialog>
+
+    <el-dialog
+      v-if="viewTermsContract"
+      title="服务条款"
+      destroy-on-close
+      :visible.sync="viewTermsContract"
+      width="1000px"
+    >
+      <ht-component :htId="htId" @close="this.handleTermsClose"></ht-component>
+    </el-dialog>
   </div>
 </template>
 
@@ -200,11 +215,14 @@ import noPage from '@/components/noPage/noPage.vue'
 import drawerCard from '@/components/drawerCard.vue'
 import { mapState } from 'vuex'
 import Axios from '@/https/axios'
+import htComponent from './ht.vue'
 
 export default {
-  components: { noPage, drawerCard },
+  components: { noPage, drawerCard, htComponent },
   data() {
     return {
+      viewTermsContract: false,
+      htId: null,
       drawerVisible: false,
       editForm: { name: null, size_unit: '1', width: '' },
       searchdialogVisible: false,
@@ -240,6 +258,19 @@ export default {
     this.$store.commit('noPage/setApi', '/seller/listPository')
   },
   methods: {
+    handleCommand(id, command) {
+      if (command === 'handleAddRelation') return this.handleAddRelation(id)
+      if (command === 'viewTerms') return this.viewTerms(id)
+      if (command === 'handleJcht') return this.handleJcht(id)
+    },
+    handleTermsClose() {
+      this.viewTermsContract = false
+    },
+    viewTerms(id) {
+      console.log(id)
+      this.htId = id
+      this.viewTermsContract = true
+    },
     async handleAddRelation(id) {
       await Axios.fetchPost('/seller/addRelation', {
         id
@@ -276,11 +307,17 @@ export default {
     },
     async handleJcht(id) {
       // seller/delRelation
-      await Axios.fetchPost('/seller/delRelation', {
-        id
+      this.$confirm('是否解除合同', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await Axios.fetchPost('/seller/delRelation', {
+          id
+        })
+        this.$message.success('解约成功')
+        this.$store.dispatch('noPage/init')
       })
-      this.$message.success('解约成功')
-      this.$store.dispatch('noPage/init')
     },
     handleClose() {
       console.log(1)

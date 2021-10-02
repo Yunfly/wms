@@ -38,11 +38,11 @@
           <el-form-item label="开始时间:" prop="startDate">
             <el-date-picker
               v-model="form.startDate"
-              type="datetime"
+              type="date"
               default-time="12:00:00"
               placeholder="选择日期"
-              format="yyyy-MM-dd HH:mm:ss"
-              value-format="yyyy-MM-dd HH:mm:ss"
+              format="yyyy-MM-dd"
+              value-format="yyyy-MM-dd"
               size="small"
             >
             </el-date-picker>
@@ -168,6 +168,7 @@
       :key="item.name"
       :title="item.name"
       :tableData="item.tableData"
+      :models="item.models"
       @delete="handleItemDelete"
       @change="handleModelsChange"
     ></price-card>
@@ -183,14 +184,19 @@
 <script>
 import Axios from '@/https/axios'
 import priceCard from '../../components/price-card.vue'
-
 export default {
   components: { priceCard },
   created() {
     this.getItem()
   },
+  computed: {
+    id() {
+      return this.$router.currentRoute.query.id
+    }
+  },
   data() {
     return {
+      contractId: null,
       dialogVisible: false,
       warsehouse: '',
       datetype: '1',
@@ -219,9 +225,19 @@ export default {
       })
 
       try {
-        const res = await Axios.fetchGet('/warehouse/contract/getContract')
+        const res = await Axios.fetchGet('/warehouse/contract/getContract', {
+          id: this.id
+        })
         this.form = res.data.basic
-        this.priceCardDate = res.data.others
+        if (res.data.id) this.contractId = res.data.id
+        this.priceCardDate = res.data.others.map((x) => {
+          return {
+            name: x.name,
+            models: x.models,
+            id: x.id,
+            tableData: x.details
+          }
+        })
       } finally {
         loading.close()
       }
@@ -235,6 +251,8 @@ export default {
     async handleClickBtn() {
       await Axios.fetchPost('/warehouse/contract/addContract', {
         basic: this.form,
+        pid: this.id,
+        id: this.contractId || undefined,
         others: this.priceCardDate.map((x) => {
           return {
             details: x.tableData,
@@ -243,6 +261,7 @@ export default {
           }
         })
       })
+      this.$message.success('合同创建成功')
     },
     async handleConfirm() {
       console.log(this.editForm.tableData)

@@ -146,28 +146,7 @@ export default {
   },
   data() {
     return {
-      data: [
-        {
-          createDate: '2021-09-05T09:05:37.630Z',
-          id: '1',
-          location: 'MX',
-          name: 'Amazon shop',
-          platform: 'Amazon',
-          seller: 'string',
-          token: 'string',
-          updateDate: '2021-09-05T09:05:37.630Z'
-        },
-        {
-          createDate: '2021-09-05T09:05:37.630Z',
-          id: '2',
-          location: 'US',
-          name: 'eBay shop',
-          platform: 'eBay',
-          seller: 'string',
-          token: 'string',
-          updateDate: '2021-09-05T09:05:37.630Z'
-        }
-      ],
+      data: [],
       countries: [
         'US',
         'CA',
@@ -223,6 +202,10 @@ export default {
       }
       try {
         await Axios.fetchPost(url, params)
+
+        this.$message.success(
+          `${this.dialogTitle === '添加店铺' ? '添加' : '更新'}成功`
+        )
       } finally {
         this.importdialogVisible = false
         this.$store.dispatch('noPage/init')
@@ -238,7 +221,7 @@ export default {
       this.importdialogVisible = false
     },
     handleDelete(id) {
-      this.$confirm('是否删除该店铺', '提示', {
+      this.$confirm('若删除店铺则同时删除与该店铺相关联的商品 sku', '提示', {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         type: 'warning'

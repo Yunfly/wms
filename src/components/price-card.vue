@@ -30,9 +30,15 @@
               </div>
             </template>
           </el-table-column>
-
           <el-table-column label="操作" align="center">
             <template slot-scope="scope">
+              <el-button
+                v-if="editalbe"
+                type="danger"
+                size="small"
+                @click="handleEdit(title, scope.row, scope.$index)"
+                >编辑</el-button
+              >
               <el-button
                 type="danger"
                 size="small"
@@ -59,14 +65,14 @@
         style="width: 100%; margin-top: 10px"
       >
         <el-select
-          v-model="form.models"
           @change="handleModelsChange"
+          v-model="models"
           multiple
           placeholder
           size="small"
         >
           <el-option
-            v-for="(item, index) in models"
+            v-for="(item, index) in modelsOptions"
             :key="index"
             :label="item.label"
             :value="item.value"
@@ -80,14 +86,14 @@
 
 <script>
 export default {
-  props: ['title', 'subtitle', 'options', 'tableData'],
+  props: ['title', 'subtitle', 'options', 'tableData', 'models', 'editalbe'],
 
   data() {
     return {
       warsehouse: '',
       datetype: '1',
-      form: { models: [] },
-      models: [
+      form: {},
+      modelsOptions: [
         {
           value: 0,
           label: '前程管理'
@@ -97,22 +103,6 @@ export default {
           label: '订单管理'
         }
       ]
-      // tableData: [
-      //   {
-      //     id: '12987122',
-      //     name: '$280',
-      //     amount1: '234',
-      //     amount2: '3.2',
-      //     amount3: 10
-      //   },
-      //   {
-      //     id: '12987123',
-      //     name: '$380',
-      //     amount1: '165',
-      //     amount2: '4.43',
-      //     amount3: 12
-      //   }
-      // ]
     }
   },
   methods: {
@@ -121,6 +111,9 @@ export default {
     },
     handleDelete(title, row, index) {
       this.$emit('delete', title, row, index)
+    },
+    handleEdit(title, row, index) {
+      this.$emit('edit', title, row, index)
     },
     handleModelsChange(value) {
       console.log(value)

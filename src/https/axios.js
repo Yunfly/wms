@@ -56,9 +56,10 @@ axios.interceptors.response.use(
     const status = Number(res.status) || 200
     const message =
       res.data.message || errorCode[status] || errorCode.default
+    console.log(status)
     if (status === 401) {
       router.push({
-        name: 'login'
+        path: '/login'
       })
       ElementUI.Message({
         message: message,
@@ -89,6 +90,7 @@ axios.interceptors.response.use(
     return res.data
   },
   error => {
+    console.log(11)
     return Promise.reject(new Error(error))
   }
 )

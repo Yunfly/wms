@@ -255,7 +255,10 @@ router.beforeEach((to, from, next) => {
   var expires = window.localStorage.getItem('wms_auth_expires')
   if (token && expires && Number(expires) > new Date().getTime()) {
     islogin = true
+  } else {
+    islogin = false
   }
+  console.log(islogin)
   // 访问登入页面时，如果已登入，跳转至控制面板，否则放行
   if (to.path === '/login' && !islogin) {
     return next()

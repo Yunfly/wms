@@ -5,7 +5,7 @@
         <el-button
           size="mini"
           class="filter-item"
-          @click="handleEdit"
+          @click="handleCreate"
           type="primary"
           plain
           >添加仓库
@@ -47,9 +47,16 @@
           label="操作"
           align="center"
           fixed="right"
-          width="260px"
+          width="350px"
         >
           <template slot-scope="scope">
+            <el-button
+              title="编辑"
+              type="primary"
+              size="mini"
+              @click="handleEdit(scope.row)"
+              >编辑
+            </el-button>
             <el-button
               title="合同管理"
               type="primary"
@@ -64,7 +71,13 @@
               >分配权限
             </el-button>
 
-            <el-button title="删除" type="danger" size="mini">删除 </el-button>
+            <el-button
+              title="删除"
+              type="danger"
+              size="mini"
+              @click="handleDeleteClick(scope.row.id)"
+              >删除
+            </el-button>
           </template>
         </el-table-column>
       </template>
@@ -73,7 +86,7 @@
     </no-page>
 
     <el-dialog
-      title="添加仓库"
+      :title="dialogTitle"
       :visible.sync="importdialogVisible"
       width="800px"
       :before-close="handleClose"
@@ -89,16 +102,37 @@
           <el-input v-model="editForm.name"> </el-input
         ></el-form-item>
 
-        <el-form-item label="仓库面积:" prop="name">
-          <el-input v-model="editForm.name"> </el-input
+        <el-form-item label="仓库面积:" prop="area">
+          <el-input v-model="editForm.area">
+            <template slot="append">
+              <el-select
+                style="width: 100px"
+                v-model="editForm.size_unit"
+                size="mini"
+              >
+                <el-option label="平方米" value="平方米"></el-option>
+                <el-option label="平方公尺" value="平方公尺"></el-option>
+              </el-select>
+            </template> </el-input
         ></el-form-item>
 
-        <el-form-item label="地址1/Street Address:" prop="main_street">
-          <el-input v-model="editForm.main_street"> </el-input
+        <el-form-item label="类型" prop="type">
+          <el-select v-model="editForm.type" style="width: 100%">
+            <el-option
+              v-for="item in types"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            >
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="地址1/Street Address:" prop="mainStreet">
+          <el-input v-model="editForm.mainStreet"> </el-input
         ></el-form-item>
 
-        <el-form-item label="地址2/apt,unit number:" prop="sub_street">
-          <el-input type="input" v-model="editForm.sub_street"> </el-input
+        <el-form-item label="地址2/apt,unit number:" prop="subStreet">
+          <el-input type="input" v-model="editForm.subStreet"> </el-input
         ></el-form-item>
 
         <el-form-item label="城市:" prop="city">
@@ -146,21 +180,44 @@
 import noPage from '@/components/noPage/noPage.vue'
 import Axios from '@/https/axios'
 import { mapGetters, mapState } from 'vuex'
-
+const initForm = {
+  name: '',
+  mainStreet: '',
+  subStreet: '',
+  city: '',
+  state: '',
+  size_unit: '平方米',
+  country: '美国',
+  zipcode: '',
+  area: '',
+  type: true,
+  phone: ''
+}
 // /api/warehouse/listPository
 export default {
   data() {
     return {
       editForm: {
         name: '',
-        main_street: '',
-        sub_street: '',
+        mainStreet: '',
+        subStreet: '',
         city: '',
         state: '',
         country: '美国',
         zipcode: '',
         phone: ''
       },
+      dialogTitle: '添加仓库',
+      types: [
+        {
+          value: true,
+          label: '全职'
+        },
+        {
+          value: false,
+          label: '兼职'
+        }
+      ],
       importdialogVisible: false,
       loginRules: {
         name: [
@@ -169,7 +226,13 @@ export default {
             trigger: 'blur'
           }
         ],
-        main_street: [
+        subStreet: [
+          {
+            required: true,
+            trigger: 'blur'
+          }
+        ],
+        mainStreet: [
           {
             required: true,
             trigger: 'blur'
@@ -224,14 +287,72 @@ export default {
     handleSubmit() {
       this.$refs.editForm.validate(async (valid) => {
         if (valid) {
-          await Axios.fetchPost('/warehouse/addPository', this.editForm)
+          this.editForm.area += this.editForm.size_unit
+          delete this.editForm.size_unit
+          if (this.dialogTitle === '添加仓库') {
+            await Axios.fetchPost('/warehouse/addPository', this.editForm)
+            this.$message.success('添加成功')
+          } else {
+            await Axios.fetchPost('/warehouse/updatePository', this.editForm)
+            this.$message.success('更新成功')
+          }
           this.handleClose()
           this.$store.dispatch('noPage/init')
         }
       })
     },
-    handleEdit() {
+    handleCreate() {
+      this.dialogTitle = '添加仓库'
+      this.editForm = JSON.parse(JSON.stringify(initForm))
       this.importdialogVisible = true
+    },
+    handleEdit({
+      name,
+      mainStreet,
+      subStreet,
+      type,
+      area,
+      city,
+      id,
+      state,
+      country,
+      zipcode,
+      phone
+    }) {
+      this.dialogTitle = '编辑仓库'
+      let size_unit = '平方米'
+      if (~area.indexOf('平方公尺')) {
+        size_unit = '平方公尺'
+      }
+      this.editForm = {
+        name,
+        size_unit,
+        id,
+        mainStreet,
+        subStreet,
+        type,
+        area: +area.split('').reduce((x, y) => (isNaN(y) ? x : x + y), 0),
+        city,
+        state,
+        country,
+        zipcode,
+        phone
+      }
+      this.importdialogVisible = true
+    },
+    handleDeleteClick(id) {
+      this.$confirm('若删除仓库，则删除与该仓库所有签订合同的用户', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        const url = `/seller/shop/${id}`
+        try {
+          await Axios.fetchDeleteRoute(url)
+        } finally {
+          this.$store.dispatch('noPage/init')
+        }
+      })
     },
     handleClose() {
       this.$refs.editForm.resetFields()

@@ -168,6 +168,7 @@
       :key="item.name"
       :title="item.name"
       :tableData="item.tableData"
+      :models="item.models"
       @delete="handleItemDelete"
       @change="handleModelsChange"
     ></price-card>
@@ -227,6 +228,8 @@ export default {
         const res = await Axios.fetchGet('/warehouse/contract/getContract', {
           id: this.id
         })
+        if (!res.data) return
+
         this.form = res.data.basic
         if (res.data.id) this.contractId = res.data.id
         this.priceCardDate = res.data.others.map((x) => {
@@ -251,7 +254,7 @@ export default {
       await Axios.fetchPost('/warehouse/contract/addContract', {
         basic: this.form,
         pid: this.id,
-        id: this.contractId,
+        id: this.contractId || undefined,
         others: this.priceCardDate.map((x) => {
           return {
             details: x.tableData,

@@ -2,6 +2,9 @@ import ElementUI from 'element-ui'
 
 export default class LoadingService {
   static loadingInstance = ''
+  constructor(params) {
+    this.loadingInstance = ''
+  }
 
   static openLoading(text) {
     this.loadingInstance = ElementUI.Loading.service({
@@ -13,6 +16,6 @@ export default class LoadingService {
   }
 
   static closeLoading() {
-    this.loadingInstance.close()
+    this.loadingInstance && this.loadingInstance.close()
   }
 }

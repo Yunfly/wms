@@ -116,18 +116,22 @@
             >
               保存用户
             </el-button>
-            <el-dropdown style="margin-left: 10px">
-              <el-button
-                title="签约"
-                type="primary"
-                size="mini"
-                @click="handleCancleRequest(scope.row)"
-              >
-                签约
-              </el-button>
+            <el-dropdown
+              style="margin-left: 10px"
+              @command="(command) => handleCommand(scope.row.id, command)"
+            >
+              <el-button type="text" size="small">更多</el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item>查看服务条款</el-dropdown-item>
-                <el-dropdown-item>解除合同</el-dropdown-item>
+                <el-dropdown-item command="handleAddRelation">
+                  签约
+                </el-dropdown-item>
+
+                <el-dropdown-item command="viewTerms"
+                  >查看服务条款</el-dropdown-item
+                >
+                <el-dropdown-item command="handleJcht"
+                  >解除合同</el-dropdown-item
+                >
               </el-dropdown-menu>
             </el-dropdown>
           </template>
@@ -185,6 +189,16 @@
         </span>
       </div>
     </el-dialog>
+
+    <el-dialog
+      v-if="viewTermsContract"
+      title="服务条款"
+      destroy-on-close
+      :visible.sync="viewTermsContract"
+      width="1000px"
+    >
+      <ht-component :htId="htId" @close="this.handleTermsClose"></ht-component>
+    </el-dialog>
   </div>
 </template>
 
@@ -193,15 +207,17 @@ import noPage from '@/components/noPage/noPage.vue'
 import drawerCard from './drawerCard.vue'
 import { mapState } from 'vuex'
 import Axios from '@/https/axios'
+import htComponent from './ht.vue'
 
 export default {
-  components: { noPage, drawerCard },
+  components: { noPage, drawerCard, htComponent },
   data() {
     return {
       drawerVisible: false,
       editForm: { name: null, size_unit: '1', width: '' },
       searchdialogVisible: false,
       drawerInfo: {},
+      viewTermsContract: false,
       importdialogVisible: false,
       warehosuseNo: '',
       warehosuseInfo: {},
@@ -236,6 +252,26 @@ export default {
     )
   },
   methods: {
+    handleCommand(id, command) {
+      if (command === 'handleAddRelation') return this.handleAddRelation(id)
+      if (command === 'viewTerms') return this.viewTerms(id)
+      if (command === 'handleJcht') return this.handleJcht(id)
+    },
+    handleTermsClose() {
+      this.viewTermsContract = false
+    },
+    viewTerms(id) {
+      console.log(id)
+      this.htId = id
+      this.viewTermsContract = true
+    },
+    async handleAddRelation(id) {
+      await Axios.fetchPost('/warehouse/contract/approveRelation', {
+        id
+      })
+      this.$message.success('签约成功')
+      this.$store.dispatch('noPage/init')
+    },
     handleDrawerClick(info) {
       this.drawerInfo = info
       this.drawerVisible = true

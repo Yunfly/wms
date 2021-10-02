@@ -15,8 +15,6 @@ import CollapseTransition from 'element-ui/lib/transitions/collapse-transition' 
 import store from './store'
 import ElementUI from 'element-ui'
 import VueClipboard from 'vue-clipboard2'
-import axios from 'axios'
-import VueAxios from 'vue-axios'
 
 Vue.prototype.$handleResError = function(res) {
   if (!res) this.$message.error('Connection Failed...')
@@ -34,9 +32,10 @@ Vue.component(CollapseTransition.name, CollapseTransition)
 
 Vue.use(Meta)
 Vue.use(VueClipboard)
-Vue.use(VueAxios, axios)
 
-export function bootstrop(_rooter) {
+export function bootstrop(role = localStorage.role) {
+  console.log('chonzhi', role)
+  const _rooter = role === 'SELLER' ? router : storeRouter
   new Vue({
     router: _rooter,
     store,
@@ -44,5 +43,5 @@ export function bootstrop(_rooter) {
   }).$mount('#app')
 }
 
-console.log(localStorage.role === 'SELLER')
-bootstrop(localStorage.role === 'SELLER' ? router : storeRouter)
+console.log(localStorage.role)
+bootstrop()

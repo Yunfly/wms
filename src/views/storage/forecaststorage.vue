@@ -593,26 +593,26 @@ export default {
       console.log(file, fileList)
     },
     async handleForecast() {
-      // const { packs, ...res } = this.storageFrom
+      const { packs, ...res } = this.storageFrom
       console.log(this.storageFrom)
-      // await Axios.fetchPut('/seller/firstpass/forecast', {
-      //   id: this.warehouseactive.id,
-      //   ...res,
-      //   packs: packs.map(({ goods, ...x }) => {
-      //     // const {...res,services} = goods
-      //     return {
-      //       ...x,
-      //       goods: goods.map((c) => {
-      //         return {
-      //           ...c,
-      //           services:
-      //             c && c.services ? c.services.map((a) => a.slice(-1)[0]) : []
-      //         }
-      //       })
-      //     }
-      //   })
-      // })
-      // this.$message.success('预报入库成功！')
+      await Axios.fetchPut('/seller/firstpass/forecast', {
+        id: this.warehouseactive.id,
+        ...res,
+        packs: packs.map(({ goods, ...x }) => {
+          // const {...res,services} = goods
+          return {
+            ...x,
+            goods: goods.map((c) => {
+              return {
+                ...c,
+                services:
+                  c && c.services ? c.services.map((a) => a.slice(-1)[0]) : []
+              }
+            })
+          }
+        })
+      })
+      this.$message.success('预报入库成功！')
     },
     handlePreview(file) {
       console.log(file)

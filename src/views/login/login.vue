@@ -286,7 +286,7 @@
 import userService from '../../services/userService'
 import { provinceAndCityData, CodeToText } from 'element-china-area-data'
 import states_hash from '@/util/states_hash.json'
-
+import { bootstrop } from '../../main'
 export default {
   data() {
     return {
@@ -404,6 +404,13 @@ export default {
       userService
         .login(params)
         .then((res) => {
+          console.log(this.registryForm.grouptype)
+          if (this.registryForm.grouptype === 1) {
+            localStorage.role = 'STORE'
+          } else {
+            localStorage.role = 'SELLER'
+          }
+          bootstrop()
           this.inTheLogin = false
           this.$router.push('/dashboard')
         })
