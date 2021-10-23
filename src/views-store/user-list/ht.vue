@@ -181,9 +181,9 @@
       ></price-card>
       <el-row type="flex">
         <el-col :offset="8">
-          <el-button type="primary" size="small" @click="handleClickBtn"
-            >签约</el-button
-          >
+          <el-button type="primary" size="small" @click="handleClickBtn">{{
+            htInfo.type === true ? '修订合同' : '签约'
+          }}</el-button>
         </el-col>
         <el-col>
           <el-button size="small" type="danger" @click="$emit('close')"
@@ -205,9 +205,9 @@ import Axios from '@/https/axios'
 import priceCard from '../../components/price-card.vue'
 export default {
   components: { priceCard },
-  props: ['htId'],
+  props: ['htInfo'],
   created() {
-    this.getItem(this.htId)
+    this.getItem(this.htInfo.cid)
   },
   computed: {
     id() {
@@ -240,7 +240,7 @@ export default {
     async getItem() {
       try {
         const res = await Axios.fetchGet('/warehouse/contract/getContract', {
-          id: this.htId
+          id: this.htInfo.cid
         })
         if (!res.data) return
         this.form = res.data.basic
@@ -264,10 +264,20 @@ export default {
       this.dialogVisible = false
     },
     async handleClickBtn() {
-      await Axios.fetchPost('/seller/addRelation', {
-        id: this.htId
-      })
-      this.$message.success('合同签约成功')
+      if (this.htInfo.type) {
+        await Axios.fetchPost('/warehouse/contract/approveRelation', {
+          approve: true,
+          id: this.htInfo.cid
+        })
+      } else {
+        await Axios.fetchPost('/seller/addRelation', {
+          id: this.htInfo.cid
+        })
+      }
+
+      this.$message.success(
+        `合同${this.htInfo.type === true ? '修订合同' : '签约'}成功`
+      )
       this.$store.dispatch('noPage/init')
       this.$emit('close')
     },

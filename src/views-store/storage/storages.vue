@@ -5,26 +5,28 @@
         <div class="asidehead">
           <div class="asidehead-item1">
             <i class="icon iconfont icon-cangku"></i>
-            <p>卖家列表</p>
+            <p>仓库列表</p>
           </div>
         </div>
         <div class="warehoselist">
           <div
             class="warehoselist-item"
-            :class="warehouseactive == index ? 'active' : ''"
+            :class="
+              warehouseactive && warehouseactive.id == item.id ? 'active' : ''
+            "
             v-for="(item, index) in warehouselist"
             :key="index"
             @click="clickseller(item, index)"
           >
-            <p><span>卖</span>{{ item.seller }}{{ index + 1 }}</p>
-            <i
+            <p><span>仓</span>{{ item.seller }}</p>
+            <!-- <i
               class="el-icon-delete"
               title="删除卖家"
               @click="handlEdeleteSeller(item, index)"
-            ></i>
+            ></i> -->
           </div>
         </div>
-        <div class="asidetool1">
+        <!-- <div class="asidetool1">
           <el-button
             size="mini"
             @click="handleAdd"
@@ -32,10 +34,20 @@
             icon="el-icon-plus"
             >新增卖家
           </el-button>
-        </div>
+        </div> -->
       </div>
     </div>
     <div class="aside" v-if="type == 2">
+      <div class="aside-item3" @click="type = 1" style="margin-left: -17px">
+        返回上级
+      </div>
+      <div
+        class="aside-item1"
+        :class="menuactive == '/storagedashboard' ? 'isactive' : ''"
+        @click="cliclmenu('/storagedashboard')"
+      >
+        {{ warehouseactive.seller }}
+      </div>
       <!-- <div
         class="aside-item1"
         :class="menuactive == '/storagedashboard' ? 'isactive' : ''"
@@ -211,18 +223,28 @@
               <div class="tag">卖家</div>
             </div>
             <div class="warehousebox-left-bottom">
-              <div class="warehousebox-left-bottom-item">
-                <div class="contact" @click="openchartbox">
-                  <i class="icon iconfont icon-zu17"></i>
-                  <p>联系卖家</p>
-                </div>
-              </div>
-              <el-divider direction="vertical" />
-              <div class="warehousebox-left-bottom-item">
-                <div class="goorder" @click="gotoorder">
-                  <i class="icon iconfont icon-dingdan"></i>
-                  <p>进入订单</p>
-                </div>
+              <!-- <div class="warehousebox-left-bottom-item">
+                <el-button
+                  type="primary"
+                  icon="icon iconfont icon-zu17"
+                  @click="openchartbox"
+                  size="medium"
+                  >联系卖家</el-button
+                >
+              </div> -->
+              <!-- <el-divider direction="vertical" /> -->
+              <div
+                class="warehousebox-left-bottom-item"
+                style="justify-content: center; width: 100%"
+              >
+                <el-button
+                  type="warning"
+                  :disabled="warehouselist.length === 0 || !warehouseactive.id"
+                  icon="icon iconfont icon-dingdan"
+                  @click="gotoorder"
+                  size="medium"
+                  >进入仓库</el-button
+                >
               </div>
             </div>
           </div>
@@ -380,23 +402,15 @@
 
 <script>
 import $ from 'jquery'
+import Axios from '@/https/axios'
+
 export default {
   components: {},
   data() {
     return {
       menuactive: '/storagedashboard',
       type: 1,
-      warehouselist: [
-        {
-          seller: '卖家xxxxxxx'
-        },
-        {
-          seller: '卖家xxxxxxx'
-        },
-        {
-          seller: '卖家xxxxxxx'
-        }
-      ],
+      warehouselist: [],
       warehouseactive: 0,
       list: [
         {
@@ -457,14 +471,25 @@ export default {
       Invitationcode: null
     }
   },
+  async created() {
+    await this.fetchshoplist()
+    this.warehouseactive = this.warehouselist[0]
+  },
   methods: {
+    async fetchshoplist() {
+      const shoplist = await Axios.fetchGet('/warehouse/listPository')
+      this.warehouselist = shoplist.data.records.map((x) => ({
+        seller: x.name,
+        id: x.id
+      }))
+    },
     cliclmenu(path) {
       this.menuactive = path
       this.$router.push(path)
     },
     handlEdeleteSeller(item, index) {},
     clickseller(item, index) {
-      this.warehouseactive = index
+      this.warehouseactive = item
     },
     handleCurrentChange(val) {},
     gettime() {

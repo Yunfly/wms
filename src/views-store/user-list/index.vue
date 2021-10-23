@@ -1,13 +1,29 @@
 <template>
   <div>
     <no-page
+      :disabledAutoInit="true"
       :searchForm="filters"
       @handleFilter="handleFilter"
       @handleCurrentChange="handleCurrentChange"
       @handleBitchDispatch="handleBitchDispatch"
     >
       <template v-slot:filter>
-        <el-form-item label="所需面积:" prop="user">
+        <el-form-item label="仓库:" prop="user">
+          <el-select
+            @change="handleModelsChange"
+            v-model="positoryId"
+            placeholder
+            size="small"
+          >
+            <el-option
+              v-for="(item, index) in listPository"
+              :key="index"
+              :label="item.name"
+              :value="item.id"
+            ></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="所需面积:" prop="area">
           <el-input
             class="filter-item input-normal"
             v-model="filters.user"
@@ -28,7 +44,11 @@
       </template>
 
       <template v-slot:table-menu-left>
-        <el-radio-group size="small" v-model="warehouseType">
+        <el-radio-group
+          size="small"
+          @change="handleTypeChange"
+          v-model="warehouseType"
+        >
           <el-radio-button
             size="small"
             label="all"
@@ -117,6 +137,7 @@
               保存用户
             </el-button>
             <el-dropdown
+              v-if="!scope.row.remove"
               style="margin-left: 10px"
               @command="(command) => handleCommand(scope.row, command)"
             >
@@ -197,7 +218,10 @@
       :visible.sync="viewTermsContract"
       width="1000px"
     >
-      <ht-component :htId="htId" @close="this.handleTermsClose"></ht-component>
+      <ht-component
+        :htInfo="htInfo"
+        @close="this.handleTermsClose"
+      ></ht-component>
     </el-dialog>
   </div>
 </template>
@@ -220,8 +244,10 @@ export default {
       viewTermsContract: false,
       importdialogVisible: false,
       warehosuseNo: '',
+      positoryId: '',
+      listPository: [],
       warehosuseInfo: {},
-      warehouseType: '',
+      warehouseType: 'all',
       options: [
         {
           isDefault: 1,
@@ -249,23 +275,55 @@ export default {
     // TODO: type: true 为卖家修订合同 走审批修订逻辑，false: 卖家已经签约合同
     //  statu: true 同意，false 拒绝， null 未操作
     //  remove： true 解约，没有签约逻辑操作
-    this.$store.commit(
-      'noPage/setApi',
-      '/warehouse/contract/listRelation?id=2fe28e5757bcdfeb262c6664dc90f3d9'
-    )
+
+    Axios.fetchGet('/warehouse/listPository?current=1&size=10').then((res) => {
+      console.log({ res })
+      this.listPository = res.data.records
+      if (this.listPository.length) {
+        this.positoryId = this.listPository[0].id
+        this.$store.commit(
+          'noPage/setApi',
+          `/warehouse/contract/listRelation?id=${this.positoryId}`
+        )
+        this.$store.dispatch('noPage/init')
+      }
+    })
   },
   methods: {
+    handleModelsChange(val) {
+      this.positoryId = val
+      this.$store.commit(
+        'noPage/setApi',
+        `/warehouse/contract/listRelation?id=${this.positoryId}`
+      )
+      this.$store.dispatch('noPage/init')
+    },
+    handleTypeChange(type) {
+      console.log(type)
+      if (type === 'all') {
+        this.$store.commit(
+          'noPage/setApi',
+          `/warehouse/contract/listRelation?id=${this.positoryId}`
+        )
+      } else if (type === 'already') {
+        this.$store.commit(
+          'noPage/setApi',
+          `/warehouse/contract/listRelation?id=${this.positoryId}`
+        )
+      }
+      this.$store.dispatch('noPage/init')
+    },
     handleCommand(row, command) {
       if (command === 'handleAddRelation') return this.handleAddRelation(row.id)
-      if (command === 'viewTerms') return this.viewTerms(row.cid)
+      if (command === 'viewTerms') return this.viewTerms(row)
       if (command === 'handleJcht') return this.handleJcht(row.id)
     },
     handleTermsClose() {
       this.viewTermsContract = false
     },
-    viewTerms(id) {
-      console.log(id)
-      this.htId = id
+    viewTerms(htInfo) {
+      console.log(htInfo)
+      this.htInfo = htInfo
       this.viewTermsContract = true
     },
     async handleAddRelation(id) {

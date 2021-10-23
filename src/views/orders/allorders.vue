@@ -156,15 +156,15 @@
           </el-button-group>
         </div>
         <div class="table-menu-right">
-            <el-button
-              size="mini"
-              class="filter-item"
-              @click="handleimport"
-              type="primary"
-              plain
-              icon="icon iconfont icon-jichutubiao-"
-              >导入
-            </el-button>
+          <el-button
+            size="mini"
+            class="filter-item"
+            @click="handleimport"
+            type="primary"
+            plain
+            icon="icon iconfont icon-jichutubiao-"
+            >导入
+          </el-button>
         </div>
       </div>
       <el-table
@@ -252,12 +252,12 @@
             >
               删除
             </el-button>
-            <el-dropdown style="margin-left: 10px">
+            <el-dropdown style="margin-left: 10px" @command="handleCommand">
               <el-button type="primary" size="mini">
                 更多<i class="el-icon-arrow-down el-icon--right"></i>
               </el-button>
               <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item>购买Label</el-dropdown-item>
+                <el-dropdown-item command="buy">购买Label</el-dropdown-item>
                 <el-dropdown-item>打印Label</el-dropdown-item>
                 <el-dropdown-item>上传Label</el-dropdown-item>
                 <el-dropdown-item>确认已经发货</el-dropdown-item>
@@ -604,85 +604,36 @@
       </div>
     </div>
     <el-dialog
-      title="详情"
+      title="订单详情"
       :visible.sync="dialogVisible"
       width="50%"
       :before-close="handleClose"
     >
       <div class="detailbox">
-        <div class="detailboxitem">
-          <div class="item">
-            <p>所在库位：</p>
-            <p>一库</p>
-          </div>
-          <div class="item">
-            <p>下单时间：</p>
-            <p>2021-03-16 14 : 00 : 56</p>
-          </div>
-        </div>
-        <div class="detailboxtitle">
-          <p>基本信息</p>
-        </div>
         <table border="1" cellpadding="10" border-collapse="collapse">
           <tr>
-            <td class="tableitem1">SKU：</td>
+            <td class="tableitem1">订单信息：</td>
             <td class="tableitem2">sadf1234</td>
-            <td class="tableitem1">长：</td>
-            <td class="tableitem2">3英寸</td>
+            <td class="tableitem1"></td>
+            <td class="tableitem2"></td>
           </tr>
           <tr>
-            <td class="tableitem1">产品名称：</td>
-            <td class="tableitem2">鼠标</td>
-            <td class="tableitem1">宽：</td>
-            <td class="tableitem2">3英寸</td>
+            <td class="tableitem1">SKU：</td>
+            <td class="tableitem2">sku111</td>
+            <td class="tableitem1">商品：</td>
+            <td class="tableitem2">帽子</td>
           </tr>
           <tr>
             <td class="tableitem1">数量：</td>
-            <td class="tableitem2">2</td>
-            <td class="tableitem1">高：</td>
-            <td class="tableitem2">3英寸</td>
+            <td class="tableitem2" colspan="3">2</td>
           </tr>
           <tr>
-            <td class="tableitem1">订单状态：</td>
-            <td class="tableitem2"><el-tag type="danger">未发货</el-tag></td>
-            <td class="tableitem1">重量：</td>
-            <td class="tableitem2">10千克</td>
+            <td class="tableitem1">收件人</td>
+            <td class="tableitem2" colspan="3">Joe</td>
           </tr>
           <tr>
-            <td class="tableitem1">备注：</td>
-            <td class="tableitem3" colspan="3">缺货</td>
-          </tr>
-        </table>
-
-        <div class="detailboxtitle">
-          <p>收件人信息</p>
-        </div>
-        <table border="1" cellpadding="10" border-collapse="collapse">
-          <tr>
-            <td class="tableitem1">名：</td>
-            <td class="tableitem2">Larry</td>
-            <td class="tableitem1">姓：</td>
-            <td class="tableitem2">Guo</td>
-          </tr>
-          <tr>
-            <td class="tableitem1">电话：</td>
-            <td class="tableitem2">9806661279</td>
-            <td class="tableitem1">城市：</td>
-            <td class="tableitem2">Creensboro</td>
-          </tr>
-          <tr>
-            <td class="tableitem1">洲：</td>
-            <td class="tableitem2">NC</td>
-            <td class="tableitem1">zipcode：</td>
-            <td class="tableitem2">27407</td>
-          </tr>
-          <tr>
-            <td class="tableitem1">地址1：</td>
-            <td class="tableitem3" colspan="3">2812Vanstory</td>
-          </tr>
-          <tr>
-            <td class="tableitem1">地址2：</td>
-            <td class="tableitem3" colspan="3">APT 3G</td>
+            <td class="tableitem1">收件地址：</td>
+            <td class="tableitem3" colspan="3">123123</td>
           </tr>
         </table>
       </div>
@@ -691,6 +642,93 @@
           >确定</el-button
         >
       </span>
+    </el-dialog>
+
+    <el-dialog
+      title="Bug Shopping"
+      :visible.sync="buymodelDialog"
+      width="1200px"
+      :before-close="handleShoppingClose"
+    >
+      <div>
+        <div style="float: right">
+          <el-button
+            size="small"
+            @click="dialogVisible = false"
+            >返回</el-button
+          >
+        </div>
+        <div style="clear: both"></div>
+      </div>
+      <div class="detailbox">
+        <el-table :data="[{ id: 1 }]" style="width: 100%">
+          <el-table-column prop="date" label="Order Detail" width="180">
+            <template> sku: sku00001 </template>
+          </el-table-column>
+          <el-table-column prop="name" label="Weight and packing" width="280">
+            <template>
+              <el-row type="flex" justify="space-between">
+                <el-col :span="11">
+                  <el-input size="mini" type="number" placeholder="">
+                    <el-select
+                      style="width: 60px"
+                      slot="append"
+                      value="lb"
+                      placeholder=""
+                      size="mini"
+                    >
+                      <el-option label="lb" value="lb"></el-option>
+                    </el-select>
+                  </el-input>
+                </el-col>
+                <el-col :span="11">
+                  <el-input size="mini" type="number" placeholder="">
+                    <el-select
+                      value="oz"
+                      style="width: 60px"
+                      slot="append"
+                      placeholder=""
+                      size="mini"
+                    >
+                      <el-option label="oz" value="oz"></el-option>
+                    </el-select>
+                  </el-input>
+                </el-col>
+              </el-row>
+            </template>
+          </el-table-column>
+          <el-table-column prop="address" label="Customer ship option">
+            <template> Standard </template>
+          </el-table-column>
+          <el-table-column prop="address" label="Selected shopping service">
+            <template> <el-button type="text">change</el-button></template>
+          </el-table-column>
+          <el-table-column prop="address" label="Declared value / Confirmation">
+            <template>
+              <el-input size="mini" type="number" placeholder="">
+                <template slot="prepend">$</template>
+              </el-input>
+            </template>
+          </el-table-column>
+          <el-table-column prop="address" label="Total">
+            <template> $6.18</template>
+          </el-table-column>
+          <el-table-column prop="address" label="Option">
+            <template>
+              <el-button type="danger" size="small">删除此单</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <div style="margin-top: 10px">
+        <div style="float: right">
+          <div>Total: $6.18</div>
+          <el-button type="warning" size="small" @click="dialogVisible = false"
+            >购买运单</el-button
+          >
+        </div>
+        <div style="clear: both"></div>
+      </div>
     </el-dialog>
     <el-dialog
       title="物流信息"
@@ -799,7 +837,7 @@
         >
       </span>
     </el-dialog>
-        <el-dialog
+    <el-dialog
       title="批量导入"
       :visible.sync="importdialogVisible"
       width="45%"
@@ -841,6 +879,15 @@
             </el-upload>
           </div>
         </div>
+
+        <div class="importdivitem">
+          <div class="importdivitem-left">导入平台</div>
+          <div class="importdivitem-right">
+            <el-radio v-model="uploadType" label="Amazon">Amazon</el-radio>
+            <el-radio v-model="uploadType" label="newegg2">newegg</el-radio>
+          </div>
+        </div>
+
         <div class="importdivitem1">
           <p class="pp"><i class="el-icon-info"></i>特别提示</p>
           <p class="p14">1、客户单号为空，默认为系统自动生成单号</p>
@@ -922,8 +969,10 @@ export default {
   created() {},
   data() {
     return {
+      uploadType: 'Amazon',
       importstatu: '',
       importdialogVisible: false,
+      buymodelDialog: true,
       searchForm: {
         sku: null,
         warehouse: null,
@@ -1007,6 +1056,20 @@ export default {
     }
   },
   methods: {
+    handleShoppingClose() {
+      this.buymodelDialog = false
+    },
+    handleCommand(command) {
+      console.log(command)
+      if (command === 'buy') {
+        this.handleBuyClick()
+      }
+      // this.$message('click on item ' + command)
+    },
+    handleBuyClick() {
+      this.dialogVisible = true
+      console.log(11)
+    },
     ifempty(value) {
       return value || '--'
     },

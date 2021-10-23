@@ -174,17 +174,19 @@ export default {
             Authorization: window.localStorage.getItem('wms_auth_Login_Token')
           }
         })
-        .then(res => {
+        .then((res) => {
           res = res.data
           console.log(res)
+          localStorage.role = res.data.role
           this.accountInfo = res.data
         })
-        .catch(err => {
+        .catch((err) => {
           this.$handleResError(err.response)
         })
     },
     checkEmail(rule, value, callback) {
-      const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
+      const emailRegex =
+        /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/
       if (!emailRegex.test(value)) {
         callback(new Error('请输入有效的邮箱号'))
       } else {
@@ -243,7 +245,7 @@ p {
   }
   .acount-tool {
     margin-left: 100px;
-        display: flex;
+    display: flex;
     align-items: center;
     justify-content: flex-start;
   }

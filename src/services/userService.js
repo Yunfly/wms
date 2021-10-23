@@ -12,12 +12,12 @@ import * as commonConst from '../const/common'
 export default class UserService {
   static login(params) {
     return new Promise((resolve, reject) => {
-      Axios.fetchPost(urls.LOGIN, params, true).then(
+      return Axios.fetchPost(urls.LOGIN, params, true).then(
         (res) => {
           if (res && res.payload.status === commonConst.MSG_TYPE_SUCCESS) {
             window.localStorage.setItem('wms_auth_access_token', res.payload.token)
             window.localStorage.setItem('wms_auth_expires', res.payload.token_expire)
-            resolve(res.data)
+            resolve(res.payload)
           } else {
             reject(res.payload)
           }

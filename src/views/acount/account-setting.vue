@@ -67,6 +67,7 @@ export default {
         .then(res => {
           res = res.data
           console.log(res)
+          localStorage.role = res.data.role
           this.accountInfo = res.data
         })
         .catch(err => {

@@ -286,6 +286,7 @@
 import userService from '../../services/userService'
 import { provinceAndCityData, CodeToText } from 'element-china-area-data'
 import states_hash from '@/util/states_hash.json'
+import axios from 'axios'
 import { bootstrop } from '../../main'
 export default {
   data() {
@@ -403,14 +404,27 @@ export default {
       const params = JSON.parse(JSON.stringify(this.loginForm))
       userService
         .login(params)
-        .then((res) => {
+        .then(async (res) => {
+          console.log(res)
           console.log(this.registryForm.grouptype)
-          if (this.registryForm.grouptype === 1) {
-            localStorage.role = 'STORE'
-          } else {
-            localStorage.role = 'SELLER'
-          }
-          bootstrop()
+          console.log(window.localStorage.getItem('wms_auth_Login_Token'))
+          await axios
+            .get('/api/account/info', {
+              headers: {
+                Authorization: res.token
+              }
+            })
+            .then((res) => {
+              res = res.data
+              console.log(res)
+              localStorage.role = res.data.role
+              this.accountInfo = res.data
+              bootstrop()
+            })
+            .catch((err) => {
+              this.$handleResError(err.response)
+            })
+
           this.inTheLogin = false
           this.$router.push('/dashboard')
         })

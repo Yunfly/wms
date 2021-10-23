@@ -32,7 +32,8 @@ SKU入库，包裹packs中 goods*services 展示服务
           prop="warsehouse"
           style="width: 100%; margin-top: 10px"
         >
-          <el-select placeholder size="small">
+          <span v-if="id">{{ id }}</span>
+          <el-select v-else placeholder size="small">
             <el-option
               v-for="(item, index) in products"
               :key="index"
@@ -45,8 +46,9 @@ SKU入库，包裹packs中 goods*services 展示服务
       <div style="padding-bottom: 20px">
         <p class="table-header">预报物品信息:</p>
         <el-table
-          :data="storageFrom.packages"
+          :data="storageFrom.packs"
           border
+          :summary-method="getSummaries"
           show-summary
           sum-text="总计包裹:"
           class="product-table"
@@ -54,30 +56,55 @@ SKU入库，包裹packs中 goods*services 展示服务
           <el-table-column label="参考码" width="300px">
             <template slot-scope="scope">
               <div>
-                <span>{{ ifempty(scope.row.code) }}</span>
+                <span>{{ ifempty(scope.row.barcode) }}</span>
               </div>
             </template>
           </el-table-column>
-          <el-table-column label="包裹数" width="150px">
-            <template slot-scope="scope">
-              <div>
-                <span>{{ ifempty(scope.row.count) }}</span>
-              </div>
-            </template>
+          <el-table-column label="包裹数" prop="count" width="150px">
           </el-table-column>
           <el-table-column label="包裹信息" width="275px">
             <template slot-scope="scope">
               <div>
-                <p>单个包裹尺寸：{{ ifempty(scope.row.size) }}</p>
-                <p>增值服务：{{ ifempty(scope.row.serve) }}</p>
-                <p>包裹处理费：{{ ifempty(scope.row.deal) }}</p>
+                <p>
+                  单个包裹尺寸： <br />
+                  长：{{ scope.row.length }}/{{ scope.row.size_unit }}
+                  <br />
+                  宽：{{ scope.row.width }}/{{ scope.row.size_unit }}
+                  <br />
+                  高：{{ scope.row.width }}/{{ scope.row.size_unit }}
+                </p>
+                <p>
+                  增值服务：{{
+                    ifempty(
+                      scope.row.goods
+                        .reduce((a, b) => {
+                          return [...a, ...b.services.map((x) => x.title)]
+                        }, [])
+                        .join('')
+                    )
+                  }}
+                </p>
+                <p>
+                  包裹处理费：{{
+                    ifempty(
+                      scope.row.goods.reduce((a, b) => {
+                        return (
+                          a +
+                          b.services
+                            .map((x) => x.unitprice)
+                            .reduce((c, d) => c + d, 0)
+                        )
+                      }, 0)
+                    )
+                  }}
+                </p>
               </div>
             </template>
           </el-table-column>
           <el-table-column label="备注">
             <template slot-scope="scope">
               <div>
-                <span>{{ ifempty(scope.row.note) }}</span>
+                <span>{{ ifempty(scope.row.desc) }}</span>
               </div>
             </template>
           </el-table-column>
@@ -85,11 +112,16 @@ SKU入库，包裹packs中 goods*services 展示服务
       </div>
       <div style="padding-bottom: 20px" class="product-collect">
         <p class="table-header">商品总数汇总:</p>
-        <el-row type="flex" align="center">
+        <el-row
+          type="flex"
+          :key="key"
+          align="center"
+          v-for="(item, key) in Object.keys(packageList)"
+        >
           <el-col class="header" :span="4">SKU:</el-col>
-          <el-col :span="7" :offset="1">SKU001</el-col>
+          <el-col :span="7" :offset="1">{{ item }}</el-col>
           <el-col class="header" :span="4">数量:</el-col>
-          <el-col :span="7" :offset="1">23</el-col>
+          <el-col :span="7" :offset="1">{{ packageList[item] }}</el-col>
         </el-row>
       </div>
 
@@ -97,7 +129,7 @@ SKU入库，包裹packs中 goods*services 展示服务
         <p class="table-header">备注:</p>
         <el-row type="flex" align="center">
           <el-col class="header" :span="4">备注:</el-col>
-          <el-col :span="19" :offset="1">SKU001</el-col>
+          <el-col :span="19" :offset="1">{{ storageFrom.desc }}</el-col>
         </el-row>
       </div>
 
@@ -108,132 +140,200 @@ SKU入库，包裹packs中 goods*services 展示服务
       <br />
       <el-form-item prop="warsehouse" style="width: 100%">
         <el-radio-group size="small" v-model="radio1">
-          <el-radio-button label="按包裹数目入库"></el-radio-button>
-          <el-radio-button label="按SKU入库"></el-radio-button>
+          <el-radio-button :label="1">按包裹数目入库</el-radio-button>
+          <el-radio-button :label="2">按SKU入库</el-radio-button>
         </el-radio-group>
       </el-form-item>
-      <el-radio label="1" v-model="datetype">手动入库</el-radio>
-      <el-radio label="2" v-model="datetype">扫描入库</el-radio>
 
-      <el-button
-        type="primary"
-        style="float: right; margin: 0 20px 10px 0"
-        @click="handleSkuAdd"
-        size="small"
-        v-if="datetype === '1'"
-        icon=" icon iconfont icon-jia"
-        >添加SKU</el-button
-      >
-      <br />
-      <br />
+      <div v-if="radio1 === 1">
+        <el-table
+          :data="storageFrom.packs"
+          border
+          :summary-method="getSummaries"
+          show-summary
+          sum-text="总计包裹:"
+          class="product-table"
+        >
+          <el-table-column label="参考码" width="300px">
+            <template slot-scope="scope">
+              <div>
+                <span>{{ ifempty(scope.row.barcode) }}</span>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="包裹数" prop="count" width="150px">
+          </el-table-column>
+          <el-table-column label="包裹明细及请求服务信息" width="275px">
+            <template slot-scope="scope">
+              <div>
+                <p :key="index" v-for="(item, index) in scope.row.goods">
+                  单个包裹信息： {{ item.sku }}*{{ item.count }}
+                </p>
+                <p>
+                  增值服务：{{
+                    ifempty(
+                      scope.row.goods
+                        .reduce((a, b) => {
+                          return [...a, ...b.services.map((x) => x.title)]
+                        }, [])
+                        .join('')
+                    )
+                  }}
+                </p>
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column label="实收包裹数">
+            <template slot-scope="scope">
+              <el-form-item
+                :prop="'storageFrom.packs.' + scope.$index + '.realCount'"
+              >
+                <el-input
+                  v-model.number="scope.row.realCount"
+                  style="width: 100%"
+                ></el-input>
+              </el-form-item>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <div v-if="radio1 === 2">
+        <el-radio label="1" v-model="datetype">手动入库</el-radio>
+        <el-radio label="2" v-model="datetype">扫描入库</el-radio>
 
-      <el-table
-        v-if="datetype === '1'"
-        :data="storageFrom.skuList"
-        border
-        class="product-table"
-      >
-        <el-table-column label="SKU" width="300px">
-          <template slot-scope="scope">
-            <el-form-item
-              style="margin: 0"
-              :prop="'storageFrom.skuList.' + scope.$index + '.sku'"
-            >
-              <el-input v-model="scope.row.sku"> </el-input>
-            </el-form-item>
-            <!-- <div>
+        <el-button
+          type="primary"
+          style="float: right; margin: 0 20px 10px 0"
+          @click="handleSkuAdd"
+          size="small"
+          v-if="datetype === '1'"
+          icon=" icon iconfont icon-jia"
+          >添加SKU</el-button
+        >
+        <br />
+        <br />
+
+        <el-table
+          v-if="datetype === '1'"
+          :data="storageFrom.skuList"
+          border
+          class="product-table"
+        >
+          <el-table-column label="SKU" width="300px">
+            <template slot-scope="scope">
+              <el-form-item
+                style="margin: 0"
+                :prop="'storageFrom.skuList.' + scope.$index + '.sku'"
+              >
+                <el-input v-model="scope.row.sku"> </el-input>
+              </el-form-item>
+              <!-- <div>
               <span>{{ ifempty(scope.row.code) }}</span>
             </div> -->
-          </template>
-        </el-table-column>
-        <el-table-column label="数目" width="150px">
-          <template slot-scope="scope">
-            <el-form-item
-              style="margin: 0"
-              :prop="'storageFrom.skuList.' + scope.$index + '.number'"
-            >
-              <el-input v-model="scope.row.number"> </el-input>
-            </el-form-item>
-          </template>
-        </el-table-column>
-        <el-table-column label="实收数目" width="275px">
-          <template slot-scope="scope">
-            <el-form-item
-              style="margin: 0"
-              :prop="'storageFrom.skuList.' + scope.$index + '.count'"
-            >
-              <el-input v-model="scope.row.count"> </el-input>
-            </el-form-item>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作">
-          <template slot-scope="scope">
-            <el-button
-              type="warning"
-              @click="handleDeleteSku(scope.$index)"
-              size="small"
-              >删除</el-button
-            >
-          </template>
-        </el-table-column>
-      </el-table>
+            </template>
+          </el-table-column>
+          <el-table-column label="数目" width="150px">
+            <template slot-scope="scope">
+              <el-form-item
+                style="margin: 0"
+                :prop="'storageFrom.skuList.' + scope.$index + '.number'"
+              >
+                <el-input v-model="scope.row.number"> </el-input>
+              </el-form-item>
+            </template>
+          </el-table-column>
+          <el-table-column label="实收数目" width="275px">
+            <template slot-scope="scope">
+              <el-form-item
+                style="margin: 0"
+                :prop="'storageFrom.skuList.' + scope.$index + '.count'"
+              >
+                <el-input v-model="scope.row.count"> </el-input>
+              </el-form-item>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="scope">
+              <el-button
+                type="warning"
+                @click="handleDeleteSku(scope.$index)"
+                size="small"
+                >删除</el-button
+              >
+            </template>
+          </el-table-column>
+        </el-table>
 
-      <upload-excel-component
-        v-if="datetype === '2' && storageFrom.skuList.length === 0"
-        :on-success="handleSuccess"
-        :before-upload="beforeUpload"
-      />
-      <el-table
-        v-if="datetype === '2' && storageFrom.skuList.length > 0"
-        :data="storageFrom.skuList"
-        border
-        class="product-table"
-      >
-        <el-table-column label="SKU" width="300px">
-          <template slot-scope="scope">
-            <el-form-item
-              style="margin: 0"
-              :prop="'storageFrom.skuList.' + scope.$index + '.sku'"
-            >
-              <el-input v-model="scope.row.sku"> </el-input>
-            </el-form-item>
-            <!-- <div>
+        <el-input
+          v-if="datetype === '2' && !showSkuRecordDetail"
+          type="textarea"
+          style="width: 60%"
+          v-model="skuRecords"
+          :rows="15"
+        >
+        </el-input>
+        <div style="margin: 10px 0">
+          <el-button
+            type="primary"
+            size="medium"
+            v-if="datetype === '2'"
+            @click="handleSkuRecords"
+            >{{ showSkuRecordDetail ? '编辑' : '确认' }}</el-button
+          >
+        </div>
+
+        <el-table
+          v-if="showSkuRecordDetail === true"
+          :data="storageFrom.skuList"
+          border
+          class="product-table"
+        >
+          <el-table-column label="SKU" width="300px">
+            <template slot-scope="scope">
+              <el-form-item
+                style="margin: 0"
+                :prop="'storageFrom.skuList.' + scope.$index + '.sku'"
+              >
+                <el-input v-model="scope.row.sku"> </el-input>
+              </el-form-item>
+              <!-- <div>
               <span>{{ ifempty(scope.row.code) }}</span>
             </div> -->
-          </template>
-        </el-table-column>
-        <el-table-column label="数目" width="150px">
-          <template slot-scope="scope">
-            <el-form-item
-              style="margin: 0"
-              :prop="'storageFrom.skuList.' + scope.$index + '.number'"
-            >
-              <el-input v-model="scope.row.number"> </el-input>
-            </el-form-item>
-          </template>
-        </el-table-column>
-        <el-table-column label="实收数目" width="275px">
-          <template slot-scope="scope">
-            <el-form-item
-              style="margin: 0"
-              :prop="'storageFrom.skuList.' + scope.$index + '.count'"
-            >
-              <el-input v-model="scope.row.count"> </el-input>
-            </el-form-item>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作">
-          <template slot-scope="scope">
-            <el-button
-              type="warning"
-              @click="handleDeleteSku(scope.$index)"
-              size="small"
-              >删除</el-button
-            >
-          </template>
-        </el-table-column>
-      </el-table>
-      <br />
+            </template>
+          </el-table-column>
+          <!-- <el-table-column label="数目" width="150px">
+            <template slot-scope="scope">
+              <el-form-item
+                style="margin: 0"
+                :prop="'storageFrom.skuList.' + scope.$index + '.number'"
+              >
+                <el-input v-model="scope.row.number"> </el-input>
+              </el-form-item>
+            </template>
+          </el-table-column> -->
+          <el-table-column label="实收数目" width="275px">
+            <template slot-scope="scope">
+              <el-form-item
+                style="margin: 0"
+                :prop="'storageFrom.skuList.' + scope.$index + '.count'"
+              >
+                <el-input v-model="scope.row.count"> </el-input>
+              </el-form-item>
+            </template>
+          </el-table-column>
+          <el-table-column label="操作">
+            <template slot-scope="scope">
+              <el-button
+                type="warning"
+                @click="handleDeleteSku(scope.$index)"
+                size="small"
+                >删除</el-button
+              >
+            </template>
+          </el-table-column>
+        </el-table>
+        <br />
+      </div>
 
       <!-- <el-button type="primary">确认</el-button> -->
       <br />
@@ -245,22 +345,26 @@ SKU入库，包裹packs中 goods*services 展示服务
       </div>
       <br />
       <p class="table-header">服务:</p>
-
-      <el-row class="table-header" type="flex">
-        <el-col :span="4" style="text-align: right"
-          >电子产品检测: &nbsp;&nbsp;</el-col
+      <el-row type="flex">
+        <el-col
+          :span="8"
+          class="table-header"
+          :key="index"
+          v-for="(item, index) in Object.keys(serviceList)"
         >
-        <el-col :span="4">
-          <el-radio label="1">$2/个</el-radio>
-        </el-col>
-
-        <el-col :span="4" style="text-align: right"
-          >产品检测: &nbsp;&nbsp;</el-col
-        >
-        <el-col :span="4">
-          <el-radio label="1">$2/个</el-radio>
+          <el-row type="flex">
+            <el-col style="text-align: right">{{ item }}: &nbsp;&nbsp;</el-col>
+            <el-col>
+              <el-checkbox
+                :label="serviceList[item].split('|')[1]"
+                @change="handleServiceChange"
+                >${{ serviceList[item].split('|')[0] }}/个</el-checkbox
+              >
+            </el-col>
+          </el-row>
         </el-col>
       </el-row>
+
       <br /><br />
 
       <el-button type="primary" @click="handleSubmit" size="small"
@@ -275,17 +379,20 @@ SKU入库，包裹packs中 goods*services 展示服务
 
 <script>
 import Axios from '@/https/axios'
-import UploadExcelComponent from '@/components/UploadExcel/index.vue'
+// import UploadExcelComponent from '@/components/UploadExcel/index.vue'
 
 export default {
   created() {
     this.getItem()
   },
-  components: { UploadExcelComponent },
+  // components: { UploadExcelComponent },
   data() {
     return {
+      showSkuRecordDetail: false,
+      skuRecords: '',
       datetype: '1',
-      radio1: '',
+      radio1: 1,
+      packageList: {},
       storageFrom: {
         warsehouse: '',
         logistics: '',
@@ -310,6 +417,7 @@ export default {
         logistics: [{ required: true, message: '请选择物流', trigger: 'blur' }]
       },
       packageRules: {},
+      serviceList: {},
       cangkus: [
         { label: '仓库1', value: '1' },
         { label: '仓库2', value: '4' }
@@ -326,31 +434,77 @@ export default {
         }
       ],
       dialogVisible: false,
-      products: [
-        {
-          value: '选项1',
-          label: '黄金糕'
-        },
-        {
-          value: '选项2',
-          label: '双皮奶'
-        },
-        {
-          value: '选项3',
-          label: '蚵仔煎'
-        },
-        {
-          value: '选项4',
-          label: '龙须面'
-        },
-        {
-          value: '选项5',
-          label: '北京烤鸭'
-        }
-      ]
+      products: [],
+      service: new Set()
+    }
+  },
+  computed: {
+    id() {
+      return this.$router.currentRoute.query.id
     }
   },
   methods: {
+    handleSkuRecords() {
+      if (this.showSkuRecordDetail) {
+        this.showSkuRecordDetail = !this.showSkuRecordDetail
+        return
+      }
+      if (!this.skuRecords) {
+        return this.$message.error('无扫描记录')
+      }
+      try {
+        const skuList = this.skuRecords.split('\n')
+        this.showSkuRecordDetail = true
+        const obj = {}
+        skuList.forEach((x) => {
+          if (obj[x]) {
+            obj[x] += 1
+          } else {
+            obj[x] = 1
+          }
+        })
+        this.storageFrom.skuList = Object.keys(obj).map((x) => ({
+          sku: x,
+          number: obj[x],
+          count: obj[x]
+        }))
+      } catch (err) {
+        this.$message.error('解析扫描入库失败')
+      }
+    },
+    getSummaries(param) {
+      const { columns, data } = param
+      const sums = []
+      columns.forEach((column, index) => {
+        if (index === 0) {
+          sums[index] = '总计包裹:'
+          return
+        }
+        const values = data.map((item) => Number(item[column.property]))
+        if (!values.every((value) => isNaN(value))) {
+          sums[index] = values.reduce((prev, curr) => {
+            const value = Number(curr)
+            if (!isNaN(value)) {
+              return prev + curr
+            } else {
+              return prev
+            }
+          }, 0)
+          sums[index] += ' 个'
+        } else {
+          sums[index] = ''
+        }
+      })
+
+      return sums
+    },
+    handleServiceChange(checked, event) {
+      if (checked) {
+        this.service.add(event.target.value)
+      } else {
+        this.service.delete(event.target.value)
+      }
+    },
     beforeUpload(file) {
       const isLt1M = file.size / 1024 / 1024 < 1
 
@@ -369,8 +523,23 @@ export default {
       // this.tableHeader = header
     },
     async getItem() {
-      const item = await Axios.fetchGet('/')
-      this.storageFrom = item
+      if (this.id) {
+        const item = await Axios.fetchGet(`/biz/firstpass/${this.id}`)
+        console.log(this.packageList)
+        this.storageFrom = item.data
+        this.storageFrom.skuList = []
+        this.storageFrom.packs.forEach((x) => {
+          x.goods.forEach((item) => {
+            this.packageList[item.sku] = this.packageList[item.sku] || 0
+            this.packageList[item.sku] += x.count * item.count
+            if (item.services && item.services.length) {
+              item.services.forEach((i) => {
+                this.serviceList[i.title] = i.unitprice + '|' + i.id
+              })
+            }
+          })
+        })
+      }
     },
     ifempty(value) {
       return value || '--'
@@ -391,14 +560,32 @@ export default {
           type: 'warning'
         }
       ).then(() => {
-        this.$refs.storageFrom.validate(async (valid) => {
-          if (valid) {
-            //  TODO: 更新数据
-            Axios.fetchPost('/warehouse/firstpass/forecast', this.storageFrom)
-          } else {
-            console.log('error submit!!')
-            return false
-          }
+        let goods = []
+        if (this.datetype === '1') {
+          goods = this.storageFrom.packs.map((x) => ({
+            count: x.realCount,
+            id: x.id,
+            services: [...this.service],
+            sku: x.sku
+          }))
+        } else {
+          goods = this.storageFrom.skuList.map((x) => ({
+            count: x.count,
+            id: x.id,
+            services: [...this.service],
+            sku: x.sku
+          }))
+        }
+        Axios.fetchPost('/warehouse/firstpass/forecast', {
+          goodType: true,
+          goods,
+          id: this.id,
+          packs: this.storageFrom.packs.map((x) => ({
+            count: x.count,
+            id: x.id,
+            services: [...this.service]
+          })),
+          type: true
         })
       })
     }

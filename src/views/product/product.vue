@@ -25,17 +25,6 @@
         </el-form-item>
       </template>
 
-      <template v-slot:table-menu-left>
-        <el-button-group>
-          <el-button size="mini" class="filter-item" type="primary"
-            >全部
-          </el-button>
-          <el-button size="mini" class="filter-item" type="primary" plain
-            >待确认修改
-          </el-button>
-        </el-button-group>
-      </template>
-
       <template v-slot:table-menu-right>
         <el-button-group>
           <el-button
@@ -94,6 +83,11 @@
                 <i class="el-icon-question" slot="reference"></i>
               </el-popover> -->
             </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="图片">
+          <template slot-scope="scope">
+            <img :src="scope.row.imgurl" />
           </template>
         </el-table-column>
         <el-table-column label="店铺SKU">
@@ -187,7 +181,7 @@
       >
         <el-row type="flex" align="middle" justify="center" class="row-bg">
           <el-col :span="12" style="text-align: center">
-            <el-form-item prop="imageUrl" style="margin-top: 20px">
+            <el-form-item prop="imgurl" style="margin-top: 20px">
               <el-upload
                 class="avatar-uploader"
                 action="/api/file/upload"
@@ -198,7 +192,7 @@
                 :on-success="handleAvatarSuccess"
                 :before-upload="beforeAvatarUpload"
               >
-                <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+                <img v-if="imgurl" :src="imgurl" class="avatar" />
                 <i v-else class="el-icon-plus avatar-uploader-icon"></i>
               </el-upload>
             </el-form-item>
@@ -312,17 +306,25 @@
           </el-col>
         </el-row>
 
-        <p
-          style="
-            font-size: 16px;
-            font-family: Microsoft YaHei;
-            font-weight: bold;
-            color: #000;
-            line-height: 50px;
-          "
-        >
-          对应SKU:
-        </p>
+        <div>
+          <span
+            style="
+              font-size: 16px;
+              font-family: Microsoft YaHei;
+              font-weight: bold;
+              color: #000;
+              line-height: 50px;
+            "
+          >
+            对应SKU:
+          </span>
+          <el-button
+            @click="addSKURow"
+            size="small"
+            icon="el-icon-plus"
+            style="float: right; margin-top: 10px; margin-right: 34px"
+          ></el-button>
+        </div>
         <el-row type="flex" class="shopSku" justify="space-between">
           <el-col :span="11">
             <el-form-item label="店铺名称:" prop="shop_id">
@@ -358,15 +360,7 @@
                   class="input-with-select"
                 >
                   <el-button
-                    @click="addSKURow"
-                    v-if="index == 0"
-                    slot="append"
-                    icon="el-icon-plus"
-                    circle
-                  ></el-button>
-                  <el-button
                     @click="delSKURow(index)"
-                    v-if="index != 0"
                     slot="append"
                     icon="el-icon-minus"
                     circle
@@ -491,7 +485,7 @@ export default {
         ],
         unit: [{ required: true, message: '请选择商品单位', trigger: 'blur' }]
       },
-      imageUrl: '',
+      imgurl: '',
       title: '',
       productUnit: [
         {
@@ -561,6 +555,9 @@ export default {
       this.dialogVisible = true
     },
     addItem() {
+      console.log(this.productForm)
+      console.log(this.imgurl)
+
       this.$refs.productForm.validate(async (valid) => {
         if (valid) {
           const {
@@ -578,26 +575,31 @@ export default {
             shopInfos
           } = this.productForm
 
-          await productService.addItem({
-            name,
-            unit,
-            imgurl,
-            length,
-            height,
-            width,
-            sku,
-            weight,
-            weight_unit,
-            size_unit,
-            notes,
-            shopInfos
-          })
-          this.dialogVisible = false
-          this.$store.dispatch('noPage/init')
-          this.$message.success('添加成功')
-
-          this.$refs.productForm.resetFields()
           try {
+            await productService.addItem({
+              name,
+              unit,
+              imgurl,
+              length,
+              height,
+              width,
+              sku,
+              weight,
+              weight_unit,
+              size_unit,
+              notes,
+              shopInfos: shopInfos
+                ? shopInfos.filter((x) => x && x.shop_id && x.shop_sku).length
+                  ? shopInfos.filter((x) => x && x.shop_id && x.shop_sku)
+                  : undefined
+                : undefined
+            })
+            this.dialogVisible = false
+            this.$store.dispatch('noPage/init')
+            this.$message.success('添加成功')
+
+            this.$refs.productForm.resetFields()
+            this.productForm = cloneDeep(initProductForm)
           } catch (err) {
             this.$message.error(err.payload.message)
           }
@@ -644,10 +646,20 @@ export default {
       this.$refs.productForm.validate(async (valid) => {
         if (valid) {
           try {
-            await this.updateList(this.productForm)
+            const { shopInfos } = this.productForm
+            await this.updateList({
+              ...this.productForm,
+              shopInfos: shopInfos
+                ? shopInfos.filter((x) => x && x.shop_id && x.shop_sku).length
+                  ? shopInfos.filter((x) => x && x.shop_id && x.shop_sku)
+                  : undefined
+                : undefined
+            })
             this.$store.dispatch('noPage/init')
             this.dialogVisible = false
             this.$refs.productForm.resetFields()
+            this.$message.success('修改完成')
+            this.productForm = cloneDeep(initProductForm)
           } catch (err) {
             this.$message.error(err.message.join(','))
           }
@@ -697,13 +709,22 @@ export default {
       return false
     },
     handleAvatarSuccess(res, file) {
-      this.imageUrl = URL.createObjectURL(file.raw)
+      // 通过获取其实拿到
+      console.log({ res, file })
+      this.imgurl = URL.createObjectURL(file.raw)
+      // const res = Axios.fetchGet(`/file?key=${res.data.data}`)
     },
     async handleDeleteClick(item) {
-      await productService.deleteItem({ openid: item.openid })
-      console.log('Request cancled', item)
-      this.$store.dispatch('noPage/init')
-      this.$message.success('删除成功')
+      this.$confirm('是否确定删除该商品?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await productService.deleteItem({ openid: item.openid })
+        console.log('Request cancled', item)
+        this.$store.dispatch('noPage/init')
+        this.$message.success('删除成功')
+      })
     },
     async handleSuccess({ results, header }) {
       console.log({ results, header })
@@ -759,14 +780,20 @@ export default {
     async handleBitchDispatch(key, array) {
       console.log(key, array)
       if (!array.length) this.$message.warning('请选择要批量操作的行')
-      await Axios.axios(
-        `/iteminfo/batchDel?${array.map((x) => 'ids=' + x.openid).join('&')}`,
-        {
-          method: 'delete'
-        }
-      )
-      this.$store.dispatch('noPage/init')
-      this.$message.success('添加成功')
+      this.$confirm('是否确定删除该商品?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async () => {
+        await Axios.axios(
+          `/iteminfo/batchDel?${array.map((x) => 'ids=' + x.openid).join('&')}`,
+          {
+            method: 'delete'
+          }
+        )
+        this.$store.dispatch('noPage/init')
+        this.$message.success('添加成功')
+      })
     },
     handleCurrentChange(object) {
       console.log(object)

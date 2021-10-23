@@ -2,7 +2,7 @@
 // 外层和包裹里面均有备注
 
 <template>
-  <div class="forecaststorage-container">
+  <div class="forecaststorage-container" v-loading="loading">
     <div class="title">
       <i class="fa fa-bookmark"></i>
       <p>批次信息</p>
@@ -80,7 +80,7 @@
           <el-table-column label="序号" width="300px">
             <template slot-scope="scope">
               <div>
-                <span>{{ ifempty(scope.$index) }}</span>
+                <span>{{ ifempty(scope.$index + 1) }}</span>
               </div>
             </template>
           </el-table-column>
@@ -104,7 +104,7 @@
                   高：{{ scope.row.width }}/{{ scope.row.size_unit }}
                 </p>
                 <p>增值服务：{{ ifempty(scope.row.serve) }}</p>
-                <p>包裹处理费：{{ ifempty(scope.row.deal) }}</p>
+                <!-- <p>包裹处理费：{{ ifempty(scope.row.deal) }}</p> -->
               </div>
             </template>
           </el-table-column>
@@ -118,7 +118,7 @@
           <el-table-column label="备注">
             <template slot-scope="scope">
               <div>
-                <span>{{ ifempty(scope.row.note) }}</span>
+                <span>{{ ifempty(scope.row.desc) }}</span>
               </div>
             </template>
           </el-table-column>
@@ -222,7 +222,7 @@
                       { required: true, message: '请输入数量', trigger: 'blur' }
                     ]"
                   >
-                    {{ scope.row['unit-weight'] }} /
+                    {{ scope.row['weight'] }} /
                     {{ scope.row['weight_unit'] }}
                   </el-form-item>
                 </template>
@@ -233,7 +233,7 @@
                 width="100px"
               >
                 <template slot-scope="scope">
-                  {{ scope.row['unit-weight'] * scope.row['count'] || '' }} /
+                  {{ scope.row['weight'] * scope.row['count'] || '' }} /
                   {{ scope.row['weight_unit'] }}
                 </template>
               </el-table-column>
@@ -416,8 +416,8 @@
                 <el-form-item label="备注:" prop="desc" style="width: 100%">
                   <el-input
                     type="textarea"
-                    v-model="storageFrom.desc"
-                    placeholder="请填写物流单号"
+                    v-model="packageForm.desc"
+                    placeholder=""
                   ></el-input>
                 </el-form-item>
               </div>
@@ -478,7 +478,13 @@ const initPacks = {
   size_unit: 'cm',
   width: null,
   height: null,
-  goods: []
+  goods: [{ name: '' }]
+}
+const initStroage = {
+  warsehouse: '',
+  logistic: '',
+  lognumber: '',
+  packs: []
 }
 export default {
   components: {
@@ -490,21 +496,12 @@ export default {
   props: ['warehouseactive'],
   data() {
     return {
+      loading: false,
       storageFrom: {
         warsehouse: '',
         logistic: '',
         lognumber: '',
-        packs: [
-          // {
-          //   code: 'BHKFDSDSKFFHD',
-          //   count: 300,
-          //   size: '8KU001*100',
-          //   serve: '商品贴标$0.2/个',
-          //   deal: '$2/包裹',
-          //   price: 100,
-          //   barcode: ''
-          // }
-        ]
+        packs: []
       },
       packageForm: JSON.parse(JSON.stringify(initPacks)),
       storageRules: {
@@ -515,8 +512,14 @@ export default {
       },
       packageRules: {},
       cangkus: [
-        { label: '仓库1', value: '1' },
-        { label: '仓库2', value: '4' }
+        { label: '联邦快递', value: 'FedEx' },
+        { label: '敦豪', value: 'DHL' },
+        { label: '天地快运', value: 'TNT' },
+        { label: '联合包裹', value: 'UPS' },
+        { label: '中国邮政', value: 'EMS' },
+        { label: '民航快递', value: 'CAE' },
+        { label: '中铁快运', value: 'CRE' },
+        { label: '顺丰速运', value: 'SF' }
       ],
       fileList: [],
       list: [
@@ -555,6 +558,7 @@ export default {
   },
   methods: {
     async init() {
+      this.loading = true
       const res = await Axios.fetchGet('/seller/listPository')
       this.listPository = res.data.records.map((x) => ({
         label: x.name,
@@ -569,12 +573,15 @@ export default {
         weight: x.weight,
         weight_unit: x.weight_unit
       }))
+      this.storageFrom.warsehouse = this.warehouseactive.id
+      this.loading = false
     },
     productSelect(uid, index) {
       // console.log(value)
       const weight = this.products.find((x) => x.value === uid)
       console.log({ weight })
-      // this.packageForm.goods[index]['unit-weight'] = weight.weight
+      this.packageForm.goods[index].weight = weight.weight
+      this.packageForm.goods[index].weight_unit = weight.weight_unit
       this.packageForm.goods[index].sku = weight.sku
       this.packageForm.goods[index].id = weight.value
       this.packageForm.goods[index].barcode = weight.value
@@ -599,7 +606,6 @@ export default {
         id: this.warehouseactive.id,
         ...res,
         packs: packs.map(({ goods, ...x }) => {
-          // const {...res,services} = goods
           return {
             ...x,
             goods: goods.map((c) => {
@@ -612,6 +618,11 @@ export default {
           }
         })
       })
+      this.$refs.storageFrom.resetFields()
+      this.packageForm = JSON.parse(JSON.stringify(initPacks))
+      this.storageFrom = JSON.parse(JSON.stringify(initStroage))
+      this.storageFrom.warsehouse = this.warehouseactive.id
+
       this.$message.success('预报入库成功！')
     },
     handlePreview(file) {

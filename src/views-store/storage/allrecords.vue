@@ -1,7 +1,13 @@
 <template>
-  <div class="totalorder-container">
-    <div class="filter-container">
-      <el-form :inline="true" :model="searchForm" ref="searchForm">
+  <div>
+    <no-page
+      :searchForm="filters"
+      :options="options"
+      @handleFilter="handleFilter"
+      @handleCurrentChange="handleCurrentChange"
+      @handleBitchDispatch="handleBitchDispatch"
+    >
+      <template v-slot:filter>
         <el-form-item label="批次号:" prop="sku">
           <el-input
             class="filter-item input-normal"
@@ -48,100 +54,72 @@
             size="small"
           ></el-input>
         </el-form-item>
-        <el-form-item>
-          <el-button
+      </template>
+
+      <template v-slot:table-menu-left>
+        <el-radio-group v-model="storageType">
+          <el-radio-button
             size="small"
-            @click="searchReset"
-            icon="icon iconfont icon-qingkong"
+            label="1"
+            class="filter-item"
+            type="primary"
+            >全部订单
+          </el-radio-button>
+          <el-radio-button
+            size="small"
+            label="2"
+            class="filter-item"
             type="primary"
             plain
-            >清空查询条件
-          </el-button>
-          <el-button
+            >预约入库
+          </el-radio-button>
+          <el-radio-button
             size="small"
+            label="3"
+            class="filter-item"
             type="primary"
-            icon="icon iconfont icon-chaxun"
-            @click="handleFilter"
-            >查询
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </div>
-    <!-- 表格功能列 -->
-    <div class="twoheight1">
-      <div class="table-menu">
-        <div class="table-menu-left">
-          <el-radio-group v-model="storageType">
-            <el-radio-button
-              size="small"
-              label="1"
-              class="filter-item"
-              type="primary"
-              >全部订单
-            </el-radio-button>
-            <el-radio-button
-              size="small"
-              label="2"
-              class="filter-item"
-              type="primary"
-              plain
-              >预约入库
-            </el-radio-button>
-            <el-radio-button
-              size="small"
-              label="3"
-              class="filter-item"
-              type="primary"
-              plain
-              >已入库
-            </el-radio-button>
-          </el-radio-group>
-        </div>
-      </div>
-      <el-table
-        key="0"
-        :data="list"
-        border
-        v-loading="listLoading"
-        element-loading-text="加载中..."
-        fit
-        highlight-current-row
-        ref="multipleTable"
-        @selection-change="handleSelectionChange"
-      >
+            plain
+            >已入库
+          </el-radio-button>
+        </el-radio-group>
+      </template>
+
+      <template v-slot:table>
         <!-- <el-table-column label="序号" type="index" width="50"></el-table-column> -->
         <el-table-column type="selection" width="55"> </el-table-column>
-        <el-table-column label="操作日期" width="120">
+        <el-table-column label="操作日期" width="130">
           <template slot-scope="scope">
             <div>
               <img src="" alt="" />
-              <span>{{ ifempty(scope.row.sku) }}</span>
+              <span>{{ ifempty(scope.row.updateTime) }}</span>
             </div>
           </template>
         </el-table-column>
         <el-table-column label="对应订单号/批次号">
           <template slot-scope="scope">
-            <p>{{ ifempty(scope.row.name) }}</p>
+            <p>{{ ifempty(scope.row.batckNumber) }}</p>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="150">
           <template slot-scope="scope">
-            <p class="statu0" v-if="scope.row.statu == 0">未入库入库</p>
-            <p class="statu1" v-if="scope.row.statu == 1">已入库</p>
-            <p class="statu2" v-if="scope.row.statu == 2">已完成</p>
+            <p class="statu0" v-if="scope.row.state == 0">未入库</p>
+            <p class="statu1" v-if="scope.row.state == 1">已入库</p>
+            <p class="statu2" v-if="scope.row.state == 2">已完成</p>
           </template>
         </el-table-column>
         <el-table-column label="物品信息">
           <template slot-scope="scope">
-            <p>SKU：{{ ifempty(scope.row.name) }}</p>
-            <p>数量：{{ ifempty(scope.row.name) }}</p>
+            <div :key="index" v-for="(item, index) in scope.row.goods">
+              <p>SKU：{{ ifempty(item.sku) }}</p>
+              <p>数量：{{ ifempty(item.count) }}</p>
+            </div>
           </template>
         </el-table-column>
         <el-table-column label="物流信息">
           <template slot-scope="scope">
-            <p>配送物流：{{ ifempty(scope.row.name) }}</p>
-            <p>单 号：{{ ifempty(scope.row.name) }}</p>
-            <p>配送状态：{{ ifempty(scope.row.name) }}</p>
+            <p>配送物流：{{ ifempty(scope.row.logistic) }}</p>
+            <p>单 号：{{ ifempty(scope.row.lognumber) }}</p>
+            <!-- <p>配送状态：{{ ifempty(scope.row.name) }}</p> -->
           </template>
         </el-table-column>
         <el-table-column label="操作" width="250">
@@ -164,7 +142,7 @@
               title="入库"
               type="warning"
               size="mini"
-              @click="toForecast(scope.row.id)"
+              @click="toForecast(scope.row.batckNumber)"
             >
               入库
             </el-button>
@@ -179,116 +157,20 @@
             </el-button>
           </template>
         </el-table-column>
-      </el-table>
-
-      <div v-show="!listLoading" class="pagination-container">
-        <el-pagination
-          @current-change="handleCurrentChange"
-          :current-page.sync="listQuery.current"
-          :page-size="listQuery.size"
-          layout="total, prev, pager, next, jumper"
-          :total="total"
-        >
-        </el-pagination>
-      </div>
-      <div class="toolbox">
-        <CrudSelect
-          :dic="options"
-          v-model="option"
-          label="选择要执行的操作"
-        ></CrudSelect>
-        <el-button size="small" type="primary" @click="handleFilter"
-          >执行
-        </el-button>
-      </div>
-    </div>
-    <el-dialog
-      title="详情"
-      :visible.sync="dialogVisible"
-      width="50%"
-      :before-close="handleClose"
-    >
-      <div>
-        <el-form :inline="true" v-model="reviewDetail" ref="reviewDetail">
-          <p class="review-form-section">
-            入库批次号：{{ ifempty(reviewDetail.batchcode) }}
-          </p>
-          <p class="review-form-section">预报物品信息：</p>
-          <el-table border fit :data="reviewDetail.rows">
-            <el-table-column label="参考码">
-              <template slot-scope="scope">
-                <span>{{ ifempty(scope.row.code) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="包裹数">
-              <template slot-scope="scope">
-                <span>{{ ifempty(scope.row.packnum) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="包裹明细及请求服务项目">
-              <template slot-scope="scope">
-                <span>{{ ifempty(scope.row.services) }}</span>
-              </template>
-            </el-table-column>
-            <el-table-column label="备注">
-              <template slot-scope="scope">
-                <span>{{ ifempty(scope.row.notes) }}</span>
-              </template>
-            </el-table-column>
-          </el-table>
-          <p class="review-form-section">商品总数汇总：</p>
-          <el-form-item style="width: 48%; margin-bottom: 0px">
-            <el-input
-              placeholder="没有数据"
-              v-model="reviewDetail.sku"
-              readonly=""
-            >
-              <template slot="prepend">SKU</template>
-            </el-input>
-          </el-form-item>
-          <el-form-item style="width: 48%; margin-bottom: 0px">
-            <el-input
-              placeholder="没有数据"
-              v-model="reviewDetail.count"
-              readonly=""
-            >
-              <template slot="prepend">数量</template>
-            </el-input>
-          </el-form-item>
-          <p class="review-form-section">备注：</p>
-          <el-input
-            type="textarea"
-            :rows="4"
-            readonly="true"
-            resize="none"
-            placeholder="没有数据"
-            v-model="reviewDetail.note"
-          >
-          </el-input>
-        </el-form>
-      </div>
-      <div slot="footer" class="dialog-footer">
-        <el-button
-          style="justify-content: flex-end"
-          type="primary"
-          @click="dialogVisible = true"
-          >确定</el-button
-        >
-      </div>
-    </el-dialog>
+      </template>
+    </no-page>
   </div>
 </template>
 
 <script>
-import CrudSelect from '../../components/avue/crud-select.vue'
+import noPage from '@/components/noPage/noPage.vue'
+import axios from '@/https/axios'
+// import { mapActions, mapState, mapGetters } from 'vuex'
+
 export default {
-  components: {
-    CrudSelect
-  },
-  created() {},
+  components: { noPage },
   data() {
     return {
-      storageType: '1',
       searchForm: {
         sku: null,
         warehouse: null,
@@ -298,325 +180,93 @@ export default {
         starttime: null,
         endtime: null
       },
-      reviewDetail: {
-        rows: [],
-        sku: null,
-        count: null,
-        note: null
-      },
-      list: [
-        {
-          imgurl: '',
-          sku: 'sdoj132',
-          name: '一次性一用口罩',
-          count: 300,
-          price: 100,
-          desc: '',
-          statu: 0
-        },
-        {
-          imgurl: '',
-          sku: 'sdoj132',
-          name: '一次性一用口罩',
-          count: 300,
-          price: 100,
-          desc: '',
-          statu: 1
-        },
-        {
-          imgurl: '',
-          sku: 'sdoj132',
-          name: '一次性一用口罩',
-          count: 300,
-          price: 100,
-          desc: '',
-          statu: 2
-        }
-      ],
-      options: [{ label: '批量删除', value: '1' }],
-      listLoading: false,
-      listQuery: {
-        current: 1,
-        size: 10
-      },
-      total: 3,
-      dialogVisible: false,
-      title: '',
-      productForm: {
-        sku: null,
-        barcode: null,
-        productname: null,
-        price: null,
-        pl: null,
-        plunit: 'cm',
-        pw: null,
-        pwunit: 'cm',
-        ph: null,
-        phunit: 'cm',
-        pweight: null,
-        pweunit: 'lbs',
-        pdesc: null,
-        iswarning: false
-      },
-      imageUrl: '',
-      productRules: {
-        sku: [
-          { required: true, message: '请输入有效密码', trigger: 'blur' },
-          { min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' }
-        ],
-        barcode: [
-          { required: true, message: '请输入有效密码', trigger: 'blur' },
-          { min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' }
-        ],
-        productname: [
-          { required: true, message: '请输入有效密码', trigger: 'blur' },
-          { min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' }
-        ],
-        price: [
-          { required: true, message: '请输入有效密码', trigger: 'blur' },
-          { min: 8, max: 20, message: '长度在 8 到 20 个字符', trigger: 'blur' }
-        ]
-      },
+      storageType: '1',
+      editForm: { name: null, size_unit: '1', width: '' },
       importdialogVisible: false,
-      importstatu: 'uploading',
-      fileList: [],
-      multipleSelection: [],
-      option: null
+      options: [
+        {
+          isDefault: 1,
+          value: 'comfirm',
+          label: '确认用户修改'
+        }
+      ]
     }
   },
+  computed: {
+    filters: {
+      get() {
+        return this.$store.state.noPage.filters
+      },
+      set(value) {
+        console.log({ value })
+        this.$store.commit('noPage/updateMessage', value)
+      }
+    }
+  },
+  beforeMount() {
+    this.$store.commit(
+      'noPage/setApi',
+      '/warehouse/firstpass/listRecords?positoryId=57ab8fd0f68c0bbbcb401d10b6838088'
+    )
+  },
   methods: {
+    handleDelete(row) {
+      this.$confirm('此操作将永久删除记录, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(async (id) => {
+        await axios.fetchPost(`/biz/firstpass/${row.id}`)
+        this.$store.dispatch('noPage/init')
+      })
+    },
     toForecast(id) {
-      this.$router.push({ path: '/forecaststorage' })
+      this.$router.push({ path: '/forecaststorage', query: { id } })
     },
     ifempty(value) {
       return value || '--'
     },
-    getlist() {},
-    handleFilter() {},
-    searchReset() {},
-    handleReview(row) {
-      this.title = '查看详情'
-      this.dialogVisible = true
+    handleClose() {
+      console.log(1)
+      this.$refs.editForm.resetFields()
+      this.importdialogVisible = false
     },
-    handleEdit(row) {
-      this.title = '编辑产品'
-      this.dialogVisible = true
+    handleFilter(value) {
+      this.$store.dispatch('noPage/init')
     },
-    handleSelectionChange(val) {
-      this.multipleSelection = val
-    },
-    handleimport() {
-      this.importstatu = 'uploading'
+    handleEdit() {
       this.importdialogVisible = true
     },
-    handleDelete(row) {
-      this.$confirm('此操作将永久删除该资讯, 是否继续?', '提示', {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }).then(() => {
-        //
-      })
+    handleCancleRequest() {},
+    handleBitchDispatch(object) {
+      console.log(object)
     },
-    handleCurrentChange(val) {},
-    handleClose(done) {
-      done()
-    },
-    handleAvatarSuccess(res, file) {
-      this.imageUrl = URL.createObjectURL(file.raw)
-    },
-    beforeAvatarUpload(file) {
-      const extension = file.name.split('.')[1] === 'xls'
-      const extension2 = file.name.split('.')[1] === 'xlsx'
-
-      const isLt2M = file.size / 1024 / 1024 < 2
-
-      if (!extension && !extension2) {
-        this.$message.error('上传文件只能是 xls、xlsx格式!')
-      }
-      if (!isLt2M) {
-        this.$message.error('上传头像图片大小不能超过 2MB!')
-      }
-      return !extension && !extension2 && isLt2M
-    },
-    handleRemove(file, fileList) {
-      console.log(file, fileList)
-    },
-    handlePreview(file) {
-      console.log(file)
-    },
-    handleExceed(files, fileList) {
-      this.$message.warning(
-        `当前限制选择 1 个文件，本次选择了 ${files.length} 个文件，共选择了 ${
-          files.length + fileList.length
-        } 个文件`
-      )
-    },
-    beforeRemove(file, fileList) {
-      return this.$confirm(`确定移除 ${file.name}？`)
+    handleCurrentChange(object) {
+      console.log(object)
     }
   }
 }
 </script>
 
 <style lang="less" scoped>
-p {
-  margin: 0;
+.el-dialog__body {
+  padding: 20px 10px;
 }
-.totalorder-container {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+.el-col {
+  margin-bottom: 25px;
+}
 
-  .filter-container {
-    width: 100%;
-    background: #ffffff;
-    border-radius: 4px;
-    margin-bottom: 1%;
-    padding: 10px;
-    box-sizing: border-box;
-    /deep/.el-form-item {
-      vertical-align: bottom;
-      width: 18%;
-      margin-bottom: 0;
-      .el-form-item__label {
-        line-height: 28px;
-      }
-    }
-    /deep/.el-form-item__content {
-      display: block;
-      .el-select {
-        width: 100%;
-      }
-      .el-date-editor {
-        width: 100%;
-      }
-    }
-  }
-  .twoheight1 {
-    flex: 1;
-    width: 100%;
-    background: #ffffff;
-    border-radius: 4px;
-    padding: 10px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    .table-menu {
-      position: relative;
-      width: 100%;
-      height: 6%;
-      overflow: hidden;
-      margin: 0;
-      .table-menu-left {
-        position: absolute;
-        height: auto;
-        overflow: hidden;
-        left: 0;
-      }
-    }
-    .el-table {
-      height: 87% !important;
-      margin: 0 !important;
-      overflow: auto;
-      border-bottom: 1px solid #ebeef5;
-    }
-    .pagination-container {
-      margin-top: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    /deep/.avue-tags__menu {
-      margin-left: 10px;
-    }
-    .toolbox {
-      display: flex;
-      align-items: center;
-      .el-select {
-        margin-right: 20px;
-      }
-    }
-  }
-}
-.countdiv {
-  padding: 20px;
-  background: #000000;
-  opacity: 0.7;
-  border-radius: 5px;
-  .countitem {
-    display: flex;
-    align-items: center;
-    p {
-      font-size: 14px;
-      font-family: Microsoft YaHei;
-      font-weight: 400;
-      color: #ffffff;
-      line-height: 21px;
-    }
-  }
-}
-.tipdiv {
-  width: 130px;
-  height: 50px;
-  padding: 10px;
-  background: #000000;
-  opacity: 0.7;
-  border-radius: 5px;
-  font-size: 14px;
-  font-family: Microsoft YaHei;
-  font-weight: 400;
-  color: #ffffff;
-  line-height: 24px;
-}
-.product-form {
-  /deep/.el-form-item {
-    margin-right: 0px;
-    .el-form-item__content {
-      width: calc(100% - 100px);
-      .avatar-uploader {
-        // border: 1px dashed #d9d9d9;
-        .el-upload {
-          border: 1px dashed #d9d9d9;
-          border-radius: 6px;
-          cursor: pointer;
-          position: relative;
-          overflow: hidden;
-        }
-        .el-upload:hover {
-          border-color: #409eff;
-        }
-      }
-      .el-input {
-        .el-input__inner {
-          padding: 0 0px 0 10px;
-        }
-        .el-input-group__append {
-          .el-select {
-            .el-input {
-              .el-input__inner {
-                padding: 0 0 0 8px;
-              }
-              .el-input__suffix {
-                display: none;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
 /deep/.el-dialog__wrapper {
   .el-dialog {
     .el-dialog__header {
       padding: 10px 20px 10px;
       background: #efefef;
     }
+
     .el-dialog__body {
       padding: 20px 20px;
     }
+
     .el-dialog__footer {
       display: flex;
       align-items: center;
@@ -625,200 +275,35 @@ p {
     }
   }
 }
-.importdiv {
-  padding: 0px 30px;
-  box-sizing: border-box;
-  .importdivitem {
-    width: 100%;
-    height: 130px;
-    background: rgba(47, 143, 251, 0.05);
-    border: 1px solid rgba(47, 143, 251, 0.2);
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    .importdivitem-left {
-      height: 100%;
-      width: 20%;
-      border-right: 1px solid #2f8efb2f;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+
+/deep/.el-form-item {
+  .el-form-item__content {
+    .avatar-uploader {
+      .el-upload {
+        border: 1px dashed #d9d9d9;
+        border-radius: 6px;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .el-upload:hover {
+        border-color: #409eff;
+      }
     }
-    .importdivitem-right {
-      // height: 100%;
-      width: 75%;
-      .p16 {
-        font-size: 16px;
-        font-family: Microsoft YaHei;
-        font-weight: bold;
-        color: #666666;
-        line-height: 24px;
-      }
-      .p14 {
-        font-size: 14px;
-        font-family: Microsoft YaHei;
-        font-weight: 400;
-        color: #999999;
-        line-height: 24px;
-      }
-      /deep/.upload-demo {
-        display: flex;
-        align-items: center;
-        ul {
-          li {
-            margin: 0;
-            .el-upload-list__item-name {
-              color: #409eff;
+
+    .el-input {
+      .el-input-group__append {
+        .el-select {
+          .el-input {
+            .el-input__inner {
+              padding: 0 0 0 8px;
+            }
+
+            .el-input__suffix {
+              display: none;
             }
           }
-        }
-      }
-    }
-  }
-  .importdivitem1 {
-    width: 100%;
-    height: 130px;
-    background: rgba(251, 167, 47, 0.1);
-    border: 1px solid rgba(251, 167, 47, 0.2);
-    border-radius: 5px;
-    padding: 20px;
-    box-sizing: border-box;
-    .pp {
-      font-size: 16px;
-      font-family: Microsoft YaHei;
-      font-weight: 400;
-      color: #666666;
-      line-height: 30px;
-      i {
-        color: #fba72f;
-        font-size: 18px;
-        margin-right: 5px;
-      }
-    }
-    .p14 {
-      font-size: 14px;
-      font-family: Microsoft YaHei;
-      font-weight: 400;
-      color: #999999;
-      line-height: 24px;
-      text-indent: 20px;
-    }
-  }
-  .importsuccess {
-    margin-left: 50%;
-    transform: translateX(-50%);
-    img {
-      margin-left: 50%;
-      transform: translateX(-50%);
-    }
-    .importstatu {
-      font-size: 18px;
-      font-family: Microsoft YaHei;
-      font-weight: 400;
-      color: #333333;
-      line-height: 50px;
-      text-align: center;
-    }
-    .listinfo {
-      margin-left: 50%;
-      transform: translateX(-50%);
-      width: 401px;
-      height: 60px;
-      background: rgba(47, 143, 251, 0.05);
-      border: 1px solid rgba(47, 143, 251, 0.2);
-      border-radius: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      p {
-        font-size: 14px;
-        font-family: Microsoft YaHei;
-        font-weight: bold;
-        color: #666666;
-        line-height: 24px;
-        span {
-          font-weight: 400;
-        }
-      }
-      .green {
-        color: #30ac2d;
-      }
-      .red {
-        color: #e82424;
-      }
-    }
-  }
-  .importerror {
-    margin-left: 50%;
-    transform: translateX(-50%);
-    img {
-      margin-left: 50%;
-      transform: translateX(-50%);
-    }
-    .importstatu {
-      font-size: 18px;
-      font-family: Microsoft YaHei;
-      font-weight: 400;
-      color: #333333;
-      line-height: 50px;
-      text-align: center;
-    }
-    .listinfo {
-      margin-left: 50%;
-      transform: translateX(-50%);
-      width: 830px;
-      height: 290px;
-      background: rgba(47, 143, 251, 0.05);
-      border: 1px solid rgba(47, 143, 251, 0.2);
-      border-radius: 5px;
-      padding: 20px;
-      box-sizing: border-box;
-      .listinfoitem {
-        display: flex;
-        align-items: center;
-        padding-bottom: 15px;
-        border-bottom: 1px dashed rgba(47, 143, 251, 0.2);
-        p {
-          font-size: 14px;
-          font-family: Microsoft YaHei;
-          font-weight: bold;
-          color: #666666;
-          line-height: 24px;
-          margin-right: 50px;
-          span {
-            font-weight: 400;
-          }
-        }
-        .green {
-          color: #30ac2d;
-        }
-        .red {
-          color: #e82424;
-        }
-      }
-      .pp {
-        font-size: 16px;
-        font-family: Microsoft YaHei;
-        font-weight: 400;
-        color: #666666;
-        line-height: 30px;
-        i {
-          color: #e82424;
-          font-size: 18px;
-          margin-right: 5px;
-        }
-      }
-      .errorlist {
-        width: 100%;
-        height: 240px;
-        overflow: auto;
-        p {
-          font-size: 14px;
-          font-family: Microsoft YaHei;
-          font-weight: 400;
-          color: #e82424;
-          line-height: 24px;
         }
       }
     }
@@ -854,11 +339,12 @@ p {
   line-height: 28px;
   color: #66b1ff;
 }
-.review-form-section {
+
+.col-label {
+  text-align: right;
+  vertical-align: middle;
   font-size: 14px;
-  font-family: Microsoft YaHei;
-  font-weight: bold;
-  color: #000;
-  line-height: 50px;
+  color: #606266;
+  padding-right: 10px;
 }
 </style>

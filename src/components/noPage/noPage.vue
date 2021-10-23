@@ -93,12 +93,33 @@ import { mapState, mapMutations } from 'vuex'
 export default {
   components: {},
   mounted() {
-    console.log(this.$store.getters.getApi)
-    this.$store.dispatch('noPage/init')
+    if (!this.disabledAutoInit) {
+      console.log(this.$store.getters.getApi)
+      this.$store.dispatch('noPage/init')
+    }
   },
   data() {
     return {
       multipleSelection: [],
+      daa: [
+        {
+          batckNumber: 'string',
+          desc: 'string',
+          goods: [
+            {
+              count: 0,
+              goodsId: 0,
+              packId: 'string',
+              sku: 'string'
+            }
+          ],
+          id: 'string',
+          logistic: 'string',
+          lognumber: 'string',
+          state: 0,
+          updateTime: '2021-10-16T13:01:33.328Z'
+        }
+      ],
       value: this.options ? this.options.find((x) => x.isDefault).value : []
     }
   },
@@ -111,7 +132,7 @@ export default {
       pageTotal: (state) => state.pageTotal
     })
   },
-  props: ['searchForm', 'options', 'data', 'tableHeight'],
+  props: ['searchForm', 'options', 'data', 'tableHeight', 'disabledAutoInit'],
   watch: {
     value(val) {
       console.log(val)

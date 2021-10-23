@@ -1,5 +1,5 @@
 <template>
-  <el-container>
+  <el-container v-loading="loading">
     <el-header>
       <!-- 图标区域 -->
       <div class="logo-box">
@@ -46,17 +46,17 @@
             <i class="icon iconfont icon-ziyuan1" aria-hidden="true"></i>
             <span slot="title">首页</span>
           </el-menu-item>
-          <el-menu-item index="/product" v-if="userrole == 2">
+          <el-menu-item index="/product" v-if="userrole == 'SELLER'">
             <i class="icon iconfont icon-yuanjiaojuxing22"></i>
             <span slot="title">商品名称</span>
           </el-menu-item>
           <!-- 仓库方 -->
-          <el-menu-item index="/warehouse" v-if="userrole == 1">
+          <el-menu-item index="/warehouse" v-if="userrole == '1'">
             <i class="icon iconfont icon-xingzhuang102"></i>
             <span slot="title">仓库管理</span>
           </el-menu-item>
           <!-- 卖家方 -->
-          <el-menu-item index="/storages" v-if="userrole == 2">
+          <el-menu-item index="/storagedashboard">
             <i class="icon iconfont icon-xingzhuang102"></i>
             <span slot="title">仓库管理</span>
           </el-menu-item>
@@ -64,11 +64,11 @@
             <i class="icon iconfont icon-ziyuan3"></i>
             <span slot="title">订单管理</span>
           </el-menu-item>
-          <el-menu-item index="/user-list" v-if="userrole == 2">
+          <el-menu-item index="/user-list" v-if="userrole == 'STORAGE'">
             <i class="icon iconfont icon-xingzhuang102"></i>
             <span slot="title">用户列表</span>
           </el-menu-item>
-          <el-menu-item index="/warehouse-list" v-if="userrole == 2">
+          <el-menu-item index="/warehouse-list" v-if="userrole == 'STORAGE'">
             <i class="icon iconfont icon-xingzhuang102"></i>
             <span slot="title">仓库列表</span>
           </el-menu-item>
@@ -105,8 +105,9 @@ export default {
   },
   data() {
     return {
+      loading: true,
       menuactive: '/dashboard',
-      userrole: 2
+      userrole: ''
     }
   },
   computed: {
@@ -123,12 +124,17 @@ export default {
       userService
         .getUserInfo()
         .then((res) => {
+          console.log(res)
+          this.userrole = res.role
           this.$store.commit('setRole', res.role)
           this.$store.commit('setUserInfo', res)
         })
         .catch((err) => {
           console.log(err)
           this.$message.error(err.message)
+        })
+        .then((res) => {
+          this.loading = false
         })
     },
     clickcangku() {
@@ -138,7 +144,7 @@ export default {
       this.menuactive = '/storages'
     }
   },
-  mounted() {
+  beforeMount() {
     this.getUserInfo()
   },
   watch: {
@@ -146,7 +152,7 @@ export default {
       handler(to, from) {
         console.log(to)
         if (to.matched.length > 2) {
-          this.menuactive = to.matched[1].path
+          this.menuactive = to.matched.slice(-1)[0].path
         } else {
           this.menuactive = to.path
         }
